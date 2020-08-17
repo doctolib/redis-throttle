@@ -1,0 +1,91 @@
+image: "${ruby}"
+
+cache:
+  key: "${CI_COMMIT_REF_SLUG}-${ruby}"
+  paths: [ "vendor/ruby" ]
+
+before_script:
+  - ruby -v
+  # Hack for docker images without `git` (e.g. jruby)
+  - |
+    if ! command -v git; then
+      apt-get update && apt-get -y install git
+    fi
+  # HACK: ruby < 2.7 docker images have bundler < 2.0
+  - gem install bundler
+  - bundle config set path "vendor/ruby"
+  - bundle config set without "development doc"
+  - bundle install --jobs $(nproc)
+
+# Rubocop ######################################################################
+
+rubocop:
+  stage:     test
+  variables: { ruby: "ruby:2.5" }
+  script:    bundle exec rubocop
+
+# RSpec ########################################################################
+
+.rspec:
+  stage:     test
+  variables: { REDIS_URL: "redis://redis:6379" }
+  services:  [ "${redis}" ]
+  script:
+    - bundle exec appraisal install
+    - bundle exec appraisal rspec
+
+# RSpec Ruby-2.5 ###############################################################
+
+"rspec (ruby:2.5 redis:4)":
+  extends:   .rspec
+  variables: { ruby: "ruby:2.5", redis: "redis:4" }
+
+"rspec (ruby:2.5 redis:5)":
+  extends:   .rspec
+  variables: { ruby: "ruby:2.5", redis: "redis:5" }
+
+"rspec (ruby:2.5 redis:6)":
+  extends:   .rspec
+  variables: { ruby: "ruby:2.5", redis: "redis:6" }
+
+# RSpec Ruby-2.6 ###############################################################
+
+"rspec (ruby:2.6 redis:4)":
+  extends:   .rspec
+  variables: { ruby: "ruby:2.6", redis: "redis:4" }
+
+"rspec (ruby:2.6 redis:5)":
+  extends:   .rspec
+  variables: { ruby: "ruby:2.6", redis: "redis:5" }
+
+"rspec (ruby:2.6 redis:6)":
+  extends:   .rspec
+  variables: { ruby: "ruby:2.6", redis: "redis:6" }
+
+# RSpec Ruby-2.7 ###############################################################
+
+"rspec (ruby:2.7 redis:4)":
+  extends:   .rspec
+  variables: { ruby: "ruby:2.7", redis: "redis:4" }
+
+"rspec (ruby:2.7 redis:5)":
+  extends:   .rspec
+  variables: { ruby: "ruby:2.7", redis: "redis:5" }
+
+"rspec (ruby:2.7 redis:6)":
+  extends:   .rspec
+  variables: { ruby: "ruby:2.7", redis: "redis:6" }
+
+# RSpec JRuby-9.2 ##############################################################
+
+"rspec (jruby:9.2 redis:4)":
+  extends:   .rspec
+  variables: { ruby: "jruby:9.2", redis: "redis:4" }
+
+"rspec (jruby:9.2 redis:5)":
+  extends:   .rspec
+  variables: { ruby: "jruby:9.2", redis: "redis:5" }
+
+"rspec (jruby:9.2 redis:6)":
+  extends:   .rspec
+  variables: { ruby: "jruby:9.2", redis: "redis:6" }

@@ -1,0 +1,3 @@
+.build-redis-cell:
+  stage: build
+
