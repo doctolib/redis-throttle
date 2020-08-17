@@ -1,12 +1,13 @@
-local bucket, limit, period, now =
-  KEYS[1], tonumber(ARGV[1]), tonumber(ARGV[2]), tonumber(ARGV[3])
+local bucket, token, limit, period, now =
+  KEYS[1], ARGV[1], tonumber(ARGV[2]), tonumber(ARGV[3]), tonumber(ARGV[4])
 
-if limit <= redis.call("LLEN", bucket) and now - redis.call("LINDEX", bucket, -1) < period then
-  return 1
+redis.call("ZREMRANGEBYSCORE", bucket, "-inf", tostring(now - period))
+
+if redis.call("ZCARD", bucket) < limit then
+  redis.call("ZADD", bucket, now, token)
+  redis.call("EXPIRE", bucket, period)
+
+  return 0
 end
 
-redis.call("LPUSH", bucket, now)
-redis.call("LTRIM", bucket, 0, limit - 1)
-redis.call("EXPIRE", bucket, period)
-
-return 0
+return 1
