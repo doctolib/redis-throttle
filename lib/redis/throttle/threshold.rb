@@ -8,9 +8,6 @@ class Redis
       SCRIPT = Script.new(File.read("#{__dir__}/threshold.lua"))
       private_constant :SCRIPT
 
-      NOOP = ->(_) { nil }
-      private_constant :NOOP
-
       # @param bucket [#to_s]
       # @param limit [#to_i]
       # @param period [#to_i]
