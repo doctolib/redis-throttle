@@ -18,11 +18,19 @@ class Redis
       end
 
       # @param redis [Redis, Redis::Namespace]
+      # @param token [#to_s]
       # @return [Boolean]
-      def acquire(redis)
+      def acquire(redis, token:)
         SCRIPT
-          .call(redis, :keys => [@bucket], :argv => [@limit, @period, Time.now.to_i])
+          .call(redis, :keys => [@bucket], :argv => [token.to_s, @limit, @period, Time.now.to_i])
           .zero?
+      end
+
+      # @param redis [Redis, Redis::Namespace]
+      # @param token [#to_s]
+      # @return [void]
+      def release(redis, token:)
+        redis.zrem(@bucket, token.to_s)
       end
 
       # @param redis [Redis, Redis::Namespace]
