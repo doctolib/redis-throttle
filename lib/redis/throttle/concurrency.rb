@@ -3,7 +3,7 @@
 require_relative "./script"
 
 class Redis
-  module Throttle
+  class Throttle
     class Concurrency
       SCRIPT = Script.new(File.read("#{__dir__}/concurrency.lua"))
       private_constant :SCRIPT

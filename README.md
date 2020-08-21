@@ -49,12 +49,26 @@ threshold = Redis::Throttle::Threshold.new(:bucket_name,
   :period => 10
 )
 
-threshold.acquire(Redis.current) # => true
-threshold.acquire(Redis.current) # => false
+threshold.acquire(Redis.current, :token => "xxx") # => true
+threshold.acquire(Redis.current, :token => "xxx") # => false
 
 sleep 10
 
-threshold.acquire(Redis.current) # => true
+threshold.acquire(Redis.current, :token => "xxx") # => true
+```
+
+### Multi-Strategy
+
+``` ruby
+throttle = Redis::Throttle.new
+
+throttle << Redis::Throttle::Concurrency.new(:db, :limit => 3, :ttl => 900)
+throttle << Redis::Throttle::Threshold.new(:api_minutely, :limit => 1, :period => 60)
+throttle << Redis::Throttle::Threshold.new(:api_hourly, :limit => 10, :period => 3600)
+
+throttle.call(Redis.current, :token => "abc") do
+  # do something if all strategies are resolved
+end
 ```
 
 
