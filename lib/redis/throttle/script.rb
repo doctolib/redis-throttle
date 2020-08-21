@@ -6,7 +6,7 @@ require "redis/errors"
 require_relative "./errors"
 
 class Redis
-  module Throttle
+  class Throttle
     # Simple helper to run script by it's sha1 digest with fallbak to script
     # load if it was not loaded yet.
     class Script
