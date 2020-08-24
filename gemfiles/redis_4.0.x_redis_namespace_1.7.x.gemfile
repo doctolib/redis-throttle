@@ -25,4 +25,10 @@ group :test do
   gem "timecop"
 end
 
+group :doc do
+  gem "commonmarker"
+  gem "rouge"
+  gem "yard"
+end
+
 gemspec path: "../"

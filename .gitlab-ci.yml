@@ -31,3 +31,18 @@ rspec:
       - redis:           [ "redis:4", "redis:5", "redis:6" ]
         ruby:            [ "ruby:2.5", "ruby:2.6", "ruby:2.7", "jruby:9.2" ]
         REDIS_NAMESPACE: [ "", "xxx" ]
+
+# YARD #########################################################################
+
+pages:
+  stage:     deploy
+  variables: { ruby: "ruby:2.7" }
+  artifacts: { paths: [public] }
+  before_script:
+    - bundle config set without "development"
+    - bundle install --jobs $(nproc)
+  script:
+    - bundle exec yard
+    - mv doc public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
