@@ -4,12 +4,12 @@ require "redis"
 require "terminal-table"
 
 REDIS =
-  if ENV["REDIS_NAMESPACE"]
+  if ENV["REDIS_NAMESPACE"].to_s.strip.empty?
+    Redis.current
+  else
     require "redis-namespace"
 
-    Redis::Namespace.new(ENV["REDIS_NAMESPACE"], :redis => Redis.current)
-  else
-    Redis.current
+    Redis::Namespace.new(ENV["REDIS_NAMESPACE"].to_s.strip, :redis => Redis.current)
   end
 
 RSpec.configure do |config|

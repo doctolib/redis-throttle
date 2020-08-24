@@ -2,7 +2,7 @@ image: "${ruby}"
 
 cache:
   key: "${CI_COMMIT_REF_SLUG}-${ruby}"
-  paths: [ "vendor/ruby" ]
+  paths: [ "vendor/ruby", "gemfiles/vendor/ruby" ]
 
 before_script:
   - ruby -v
@@ -26,66 +26,15 @@ rubocop:
 
 # RSpec ########################################################################
 
-.rspec:
+rspec:
   stage:     test
-  variables: { REDIS_URL: "redis://redis:6379" }
   services:  [ "${redis}" ]
+  variables: { REDIS_URL: "redis://redis:6379" }
   script:
-    - bundle exec appraisal install
+    - bundle exec appraisal install --jobs $(nproc)
     - bundle exec appraisal rspec
-
-# RSpec Ruby-2.5 ###############################################################
-
-"rspec (ruby:2.5 redis:4)":
-  extends:   .rspec
-  variables: { ruby: "ruby:2.5", redis: "redis:4" }
-
-"rspec (ruby:2.5 redis:5)":
-  extends:   .rspec
-  variables: { ruby: "ruby:2.5", redis: "redis:5" }
-
-"rspec (ruby:2.5 redis:6)":
-  extends:   .rspec
-  variables: { ruby: "ruby:2.5", redis: "redis:6" }
-
-# RSpec Ruby-2.6 ###############################################################
-
-"rspec (ruby:2.6 redis:4)":
-  extends:   .rspec
-  variables: { ruby: "ruby:2.6", redis: "redis:4" }
-
-"rspec (ruby:2.6 redis:5)":
-  extends:   .rspec
-  variables: { ruby: "ruby:2.6", redis: "redis:5" }
-
-"rspec (ruby:2.6 redis:6)":
-  extends:   .rspec
-  variables: { ruby: "ruby:2.6", redis: "redis:6" }
-
-# RSpec Ruby-2.7 ###############################################################
-
-"rspec (ruby:2.7 redis:4)":
-  extends:   .rspec
-  variables: { ruby: "ruby:2.7", redis: "redis:4" }
-
-"rspec (ruby:2.7 redis:5)":
-  extends:   .rspec
-  variables: { ruby: "ruby:2.7", redis: "redis:5" }
-
-"rspec (ruby:2.7 redis:6)":
-  extends:   .rspec
-  variables: { ruby: "ruby:2.7", redis: "redis:6" }
-
-# RSpec JRuby-9.2 ##############################################################
-
-"rspec (jruby:9.2 redis:4)":
-  extends:   .rspec
-  variables: { ruby: "jruby:9.2", redis: "redis:4" }
-
-"rspec (jruby:9.2 redis:5)":
-  extends:   .rspec
-  variables: { ruby: "jruby:9.2", redis: "redis:5" }
-
-"rspec (jruby:9.2 redis:6)":
-  extends:   .rspec
-  variables: { ruby: "jruby:9.2", redis: "redis:6" }
+  parallel:
+    matrix:
+      - redis:           [ "redis:4", "redis:5", "redis:6" ]
+        ruby:            [ "ruby:2.5", "ruby:2.6", "ruby:2.7", "jruby:9.2" ]
+        REDIS_NAMESPACE: [ "", "xxx" ]
