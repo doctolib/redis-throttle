@@ -27,3 +27,9 @@ group :test do
   gem "terminal-table"
   gem "timecop"
 end
+
+group :doc do
+  gem "commonmarker"
+  gem "rouge"
+  gem "yard"
+end

@@ -1,0 +1,6 @@
+--load support/yard.rb
+--markup markdown
+--markup-provider commonmarker
+--template-path support/yard/template
+--readme README.md
+--files CHANGES.md,LICENSE.txt
