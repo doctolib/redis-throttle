@@ -22,8 +22,7 @@ class Redis
       # @return [Boolean]
       def acquire(redis)
         Script
-          .instance
-          .call(redis, :keys => [key], :argv => [lua_payload])
+          .eval(redis, [key], [lua_payload])
           .zero?
       end
 

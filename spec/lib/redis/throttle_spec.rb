@@ -11,16 +11,16 @@ RSpec.describe Redis::Throttle, :frozen_time do
   let(:api_hourly)   { described_class::Threshold.new(:api_hourly,   :limit => 1, :period => 3600) }
 
   describe ".new" do
-    let(:script) { described_class::Script.instance }
+    let(:script) { described_class::Script }
 
-    before { allow(script).to receive(:call).and_return(0) }
+    before { allow(script).to receive(:eval).and_return(0) }
 
     it "uses Redis.current by default" do
       throttle = described_class.new << db
 
       throttle.call(:token => "aye")
 
-      expect(script).to have_received(:call).with(Redis.current, any_args)
+      expect(script).to have_received(:eval).with(Redis.current, any_args)
     end
 
     it "supports redis client builder" do
@@ -32,7 +32,7 @@ RSpec.describe Redis::Throttle, :frozen_time do
 
       throttle.call(:token => "aye")
 
-      expect(script).to have_received(:call).with(other_redis, any_args)
+      expect(script).to have_received(:eval).with(other_redis, any_args)
     end
 
     it "uses given redis instance" do
@@ -41,7 +41,7 @@ RSpec.describe Redis::Throttle, :frozen_time do
 
       throttle.call(:token => "aye")
 
-      expect(script).to have_received(:call).with(other_redis, any_args)
+      expect(script).to have_received(:eval).with(other_redis, any_args)
     end
   end
 
