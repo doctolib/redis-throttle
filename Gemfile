@@ -18,6 +18,7 @@ group :development do
 end
 
 group :test do
+  gem "connection_pool"
   gem "redis-namespace"
   gem "rspec"
   gem "rubocop"
