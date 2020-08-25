@@ -34,21 +34,21 @@ RSpec.describe Redis::Throttle, :frozen_time do
         throttle.call(REDIS, :token => "aye") { 42 }
 
         aggregate_failures do
-          expect(api_minutely.acquire(REDIS, :token => "nay")).to be false
-          expect(api_hourly.acquire(REDIS, :token => "nay")).to be false
+          expect(api_minutely.acquire(REDIS)).to be false
+          expect(api_hourly.acquire(REDIS)).to be false
         end
       end
     end
 
     context "when not all locks can be acquired" do
-      before { api_hourly.acquire(REDIS, :token => "xxx") }
+      before { api_hourly.acquire(REDIS) }
 
       it "rejects partially acquired locks" do
         throttle.call(REDIS, :token => "nay")
 
         aggregate_failures do
           expect(db.acquire(REDIS, :token => "aye")).to be true
-          expect(api_minutely.acquire(REDIS, :token => "aye")).to be true
+          expect(api_minutely.acquire(REDIS)).to be true
         end
       end
 

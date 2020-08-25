@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
+require "json"
+
 require_relative "./script"
 
 class Redis
   class Throttle
     class Threshold
-      SCRIPT = Script.new(File.read("#{__dir__}/threshold.lua"))
-      private_constant :SCRIPT
+      attr_reader :bucket
 
       # @param bucket [#to_s]
       # @param limit [#to_i]
@@ -18,25 +19,22 @@ class Redis
       end
 
       # @param redis [Redis, Redis::Namespace]
-      # @param token [#to_s]
       # @return [Boolean]
-      def acquire(redis, token:)
-        SCRIPT
-          .call(redis, :keys => [@bucket], :argv => [token.to_s, @limit, @period, Time.now.to_i])
+      def acquire(redis)
+        Script
+          .instance
+          .call(redis, :keys => [@bucket], :argv => [lua_payload])
           .zero?
-      end
-
-      # @param redis [Redis, Redis::Namespace]
-      # @param token [#to_s]
-      # @return [void]
-      def release(redis, token:)
-        redis.zrem(@bucket, token.to_s)
       end
 
       # @param redis [Redis, Redis::Namespace]
       # @return [void]
       def reset(redis)
         redis.del(@bucket)
+      end
+
+      def lua_payload(*)
+        JSON.dump(["threshold", [@limit, @period, Time.now.to_i]])
       end
     end
   end

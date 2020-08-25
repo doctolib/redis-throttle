@@ -49,12 +49,12 @@ threshold = Redis::Throttle::Threshold.new(:bucket_name,
   :period => 10
 )
 
-threshold.acquire(Redis.current, :token => "xxx") # => true
-threshold.acquire(Redis.current, :token => "xxx") # => false
+threshold.acquire(Redis.current) # => true
+threshold.acquire(Redis.current) # => false
 
 sleep 10
 
-threshold.acquire(Redis.current, :token => "xxx") # => true
+threshold.acquire(Redis.current) # => true
 ```
 
 ### Multi-Strategy

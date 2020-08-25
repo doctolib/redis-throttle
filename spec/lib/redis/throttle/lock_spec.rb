@@ -13,7 +13,7 @@ RSpec.describe Redis::Throttle::Lock, :frozen_time do
 
   before do
     concurrency.acquire(REDIS, :token => "xxx")
-    threshold.acquire(REDIS, :token => "xxx")
+    threshold.acquire(REDIS)
   end
 
   describe "#release" do
@@ -24,7 +24,7 @@ RSpec.describe Redis::Throttle::Lock, :frozen_time do
     end
 
     it "keeps qcquired threshold locks" do
-      expect(threshold.acquire(REDIS, :token => "deadbeef")).to be false
+      expect(threshold.acquire(REDIS)).to be false
     end
   end
 end
