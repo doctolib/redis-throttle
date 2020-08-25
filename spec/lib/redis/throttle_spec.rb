@@ -12,52 +12,52 @@ RSpec.describe Redis::Throttle, :frozen_time do
 
   describe "#call" do
     it "returns lock when all strategies were resolved" do
-      expect(throttle.call(REDIS, :token => "aye")).to be_a described_class::Lock
+      expect(throttle.call(Redis.current, :token => "aye")).to be_a described_class::Lock
     end
 
     context "with block" do
       it "yields control to the given block" do
-        expect { |b| throttle.call(REDIS, :token => "aye", &b) }.to yield_control
+        expect { |b| throttle.call(Redis.current, :token => "aye", &b) }.to yield_control
       end
 
       it "returns last statement of the block" do
-        expect(throttle.call(REDIS, :token => "aye") { 42 }).to eq 42
+        expect(throttle.call(Redis.current, :token => "aye") { 42 }).to eq 42
       end
 
       it "releases concurrency locks after the block" do
-        throttle.call(REDIS, :token => "aye") { 42 }
+        throttle.call(Redis.current, :token => "aye") { 42 }
 
-        expect(db.acquire(REDIS, :token => "xxx")).to be true
+        expect(db.acquire(Redis.current, :token => "xxx")).to be true
       end
 
       it "keeps threshold locks after the block" do
-        throttle.call(REDIS, :token => "aye") { 42 }
+        throttle.call(Redis.current, :token => "aye") { 42 }
 
         aggregate_failures do
-          expect(api_minutely.acquire(REDIS)).to be false
-          expect(api_hourly.acquire(REDIS)).to be false
+          expect(api_minutely.acquire(Redis.current)).to be false
+          expect(api_hourly.acquire(Redis.current)).to be false
         end
       end
     end
 
     context "when not all locks can be acquired" do
-      before { api_hourly.acquire(REDIS) }
+      before { api_hourly.acquire(Redis.current) }
 
       it "rejects partially acquired locks" do
-        throttle.call(REDIS, :token => "nay")
+        throttle.call(Redis.current, :token => "nay")
 
         aggregate_failures do
-          expect(db.acquire(REDIS, :token => "aye")).to be true
-          expect(api_minutely.acquire(REDIS)).to be true
+          expect(db.acquire(Redis.current, :token => "aye")).to be true
+          expect(api_minutely.acquire(Redis.current)).to be true
         end
       end
 
       it "returns nil when no block given" do
-        expect(throttle.call(REDIS, :token => "nay")).to be_nil
+        expect(throttle.call(Redis.current, :token => "nay")).to be_nil
       end
 
       it "does not yields control if block given" do
-        expect { |b| throttle.call(REDIS, :token => "nay", &b) }.not_to yield_control
+        expect { |b| throttle.call(Redis.current, :token => "nay", &b) }.not_to yield_control
       end
     end
   end
