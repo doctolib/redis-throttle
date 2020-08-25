@@ -7,15 +7,15 @@ require_relative "./script"
 class Redis
   class Throttle
     class Concurrency
-      attr_reader :bucket
+      attr_reader :key
 
       # @param bucket [#to_s]
       # @param limit [#to_i]
       # @param ttl [#to_i]
       def initialize(bucket, limit:, ttl:)
-        @bucket = bucket.to_s
-        @limit  = limit.to_i
-        @ttl    = ttl.to_i
+        @limit = limit.to_i
+        @ttl   = ttl.to_i
+        @key   = "throttle:#{bucket}:c:#{@limit}:#{@ttl}"
       end
 
       # @param redis [Redis, Redis::Namespace]
@@ -24,7 +24,7 @@ class Redis
       def acquire(redis, token:)
         Script
           .instance
-          .call(redis, :keys => [@bucket], :argv => [lua_payload(token)])
+          .call(redis, :keys => [key], :argv => [lua_payload(token)])
           .zero?
       end
 
@@ -32,13 +32,13 @@ class Redis
       # @param token [#to_s]
       # @return [void]
       def release(redis, token:)
-        redis.zrem(@bucket, token.to_s)
+        redis.zrem(key, token.to_s)
       end
 
       # @param redis [Redis, Redis::Namespace]
       # @return [void]
       def reset(redis)
-        redis.del(@bucket)
+        redis.del(key)
       end
 
       def lua_payload(token)
