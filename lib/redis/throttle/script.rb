@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "digest"
+require "singleton"
 require "redis/errors"
 
 require_relative "./errors"
@@ -10,6 +11,8 @@ class Redis
     # Simple helper to run script by it's sha1 digest with fallbak to script
     # load if it was not loaded yet.
     class Script
+      include Singleton
+
       # Redis error fired when script ID is unkown.
       NOSCRIPT = "NOSCRIPT"
       private_constant :NOSCRIPT
@@ -22,8 +25,8 @@ class Redis
       }x.freeze
       private_constant :LUA_ERROR_MESSAGE
 
-      def initialize(source)
-        @source = -source.to_s
+      def initialize
+        @source = File.read("#{__dir__}/script.lua").freeze
         @digest = Digest::SHA1.hexdigest(@source)
       end
 
@@ -33,7 +36,7 @@ class Redis
         md = LUA_ERROR_MESSAGE.match(e.message.to_s)
         raise unless md
 
-        raise LuaError, [md[:message], md[:details]].compact.join(": ")
+        raise ScriptError, [md[:message], md[:details]].compact.join(": ")
       end
 
       private

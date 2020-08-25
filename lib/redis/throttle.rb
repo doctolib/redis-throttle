@@ -4,6 +4,7 @@ require_relative "./throttle/errors"
 require_relative "./throttle/version"
 require_relative "./throttle/concurrency"
 require_relative "./throttle/lock"
+require_relative "./throttle/script"
 require_relative "./throttle/threshold"
 
 # @see https://github.com/redis/redis-rb
@@ -36,11 +37,16 @@ class Redis
     private
 
     def acquire(redis, token:)
-      acquired = @strategies.take_while { |strategy| strategy.acquire(redis, :token => token) }
-      return Lock.new(acquired, :token => token) if acquired.size == @strategies.size
+      keys = []
+      argv = []
 
-      acquired.reverse_each { |strategy| strategy.release(redis, :token => token) }
-      nil
+      @strategies.each do |strategy|
+        keys << strategy.bucket
+        argv << strategy.lua_payload(token)
+      end
+
+      acquired = Script.instance.call(redis, :keys => keys, :argv => argv).zero?
+      Lock.new(@strategies, :token => token) if acquired
     end
   end
 end

@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
+require "json"
+
 require_relative "./script"
 
 class Redis
   class Throttle
     class Concurrency
-      SCRIPT = Script.new(File.read("#{__dir__}/concurrency.lua"))
-      private_constant :SCRIPT
+      attr_reader :bucket
 
       # @param bucket [#to_s]
       # @param limit [#to_i]
@@ -21,8 +22,9 @@ class Redis
       # @param token [#to_s]
       # @return [Boolean]
       def acquire(redis, token:)
-        SCRIPT
-          .call(redis, :keys => [@bucket], :argv => [token.to_s, @limit, @ttl, Time.now.to_i])
+        Script
+          .instance
+          .call(redis, :keys => [@bucket], :argv => [lua_payload(token)])
           .zero?
       end
 
@@ -37,6 +39,10 @@ class Redis
       # @return [void]
       def reset(redis)
         redis.del(@bucket)
+      end
+
+      def lua_payload(token)
+        JSON.dump(["concurrency", [token.to_s, @limit, @ttl, Time.now.to_i]])
       end
     end
   end

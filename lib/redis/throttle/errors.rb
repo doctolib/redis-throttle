@@ -3,6 +3,6 @@
 class Redis
   class Throttle
     class Error < StandardError; end
-    class LuaError < Error; end
+    class ScriptError < Error; end
   end
 end
