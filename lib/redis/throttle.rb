@@ -52,7 +52,7 @@ class Redis
       argv = []
 
       @strategies.each do |strategy|
-        keys << strategy.bucket
+        keys << strategy.key
         argv << strategy.lua_payload(token)
       end
 
