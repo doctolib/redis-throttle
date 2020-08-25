@@ -11,32 +11,37 @@ RSpec.describe Redis::Throttle, :frozen_time do
   let(:api_hourly)   { described_class::Threshold.new(:api_hourly,   :limit => 1, :period => 3600) }
 
   describe ".new" do
-    before do
-      allow(Redis.current).to receive(:eval).and_call_original
-    end
+    let(:script) { described_class::Script.instance }
+
+    before { allow(script).to receive(:call).and_return(0) }
 
     it "uses Redis.current by default" do
       throttle = described_class.new << db
 
       throttle.call(:token => "aye")
 
-      expect(Redis.current).to have_received(:eval)
+      expect(script).to have_received(:call).with(Redis.current, any_args)
     end
 
     it "supports redis client builder" do
       require "connection_pool"
 
-      connection_pool = ConnectionPool.new { Redis.new }
-      throttle        = described_class.new(&connection_pool.method(:with)) << db
+      other_redis     = instance_double(Redis)
+      connection_pool = ConnectionPool.new { other_redis }
+      throttle        = described_class.new(:redis => connection_pool.method(:with)) << db
 
       throttle.call(:token => "aye")
 
-      expect(Redis.current).not_to have_received(:eval)
+      expect(script).to have_received(:call).with(other_redis, any_args)
     end
 
-    it "prefers :redis keyword over &redis_builder" do
-      expect { |b| (described_class.new(:redis => Redis.current, &b) << db).call(:token => "aye") }
-        .not_to yield_control
+    it "uses given redis instance" do
+      other_redis  = instance_double(Redis)
+      throttle     = described_class.new(:redis => other_redis) << db
+
+      throttle.call(:token => "aye")
+
+      expect(script).to have_received(:call).with(other_redis, any_args)
     end
   end
 
