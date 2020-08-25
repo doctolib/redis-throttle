@@ -79,7 +79,7 @@ e.g. in [Sidekiq](https://github.com/mperham/sidekiq) you can pass its `#with`
 method as connection builder:
 
 ``` ruby
-throttle = Redis::Throttle.new(&Sidekiq.method(:redis))
+throttle = Redis::Throttle.new(:redis => Sidekiq.method(:redis))
 ```
 
 

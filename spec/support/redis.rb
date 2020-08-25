@@ -3,20 +3,22 @@
 require "redis"
 require "terminal-table"
 
-if ENV["Redis.current_NAMESPACE"].to_s.strip.empty?
-  Redis.current = Redis.new
-else
-  require "redis-namespace"
+REDIS_NAMESPACE = ENV["REDIS_NAMESPACE"].to_s.strip
+Redis.current =
+  if REDIS_NAMESPACE.empty?
+    Redis.new
+  else
+    require "redis-namespace"
 
-  Redis.current = Redis::Namespace.new(ENV["Redis.current_NAMESPACE"].to_s.strip, :redis => Redis.new)
-end
+    Redis::Namespace.new(REDIS_NAMESPACE, :redis => Redis.new)
+  end
 
 RSpec.configure do |config|
   config.before :suite do
     options = Redis.current._client.options.slice(:url, :scheme, :host, :port, :db)
     options[:namespace] = Redis.current.namespace if Redis.current.respond_to?(:namespace)
 
-    puts Terminal::Table.new({ :title => "Redis.current", :rows => options })
+    puts Terminal::Table.new({ :title => "REDIS", :rows => options })
   end
 
   config.before do
