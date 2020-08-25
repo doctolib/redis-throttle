@@ -12,19 +12,19 @@ RSpec.describe Redis::Throttle::Lock, :frozen_time do
   let(:threshold)   { Redis::Throttle::Threshold.new(:xyz, :limit => 1, :period => 10) }
 
   before do
-    concurrency.acquire(REDIS, :token => "xxx")
-    threshold.acquire(REDIS)
+    concurrency.acquire(Redis.current, :token => "xxx")
+    threshold.acquire(Redis.current)
   end
 
   describe "#release" do
-    before { lock.release(REDIS) }
+    before { lock.release(Redis.current) }
 
     it "releases acquired concurrency locks" do
-      expect(concurrency.acquire(REDIS, :token => "deadbeef")).to be true
+      expect(concurrency.acquire(Redis.current, :token => "deadbeef")).to be true
     end
 
     it "keeps qcquired threshold locks" do
-      expect(threshold.acquire(REDIS)).to be false
+      expect(threshold.acquire(Redis.current)).to be false
     end
   end
 end
