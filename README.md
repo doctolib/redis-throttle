@@ -60,7 +60,7 @@ threshold.acquire(Redis.current) # => true
 ### Multi-Strategy
 
 ``` ruby
-throttle = Redis::Throttle.new
+throttle = Redis::Throttle.new(:redis => Redis.current)
 
 throttle << Redis::Throttle::Concurrency.new(:db, :limit => 3, :ttl => 900)
 throttle << Redis::Throttle::Threshold.new(:api_minutely, :limit => 1, :period => 60)
@@ -69,6 +69,17 @@ throttle << Redis::Throttle::Threshold.new(:api_hourly, :limit => 10, :period =>
 throttle.call(Redis.current, :token => "abc") do
   # do something if all strategies are resolved
 end
+```
+
+
+#### With ConnectionPool
+
+If you're using [connection_pool](https://github.com/mperham/connection_pool),
+e.g. in [Sidekiq](https://github.com/mperham/sidekiq) you can pass its `#with`
+method as connection builder:
+
+``` ruby
+throttle = Redis::Throttle.new(&Sidekiq.method(:redis))
 ```
 
 

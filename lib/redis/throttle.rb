@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "redis"
+
 require_relative "./throttle/errors"
 require_relative "./throttle/version"
 require_relative "./throttle/concurrency"
@@ -11,7 +13,8 @@ require_relative "./throttle/threshold"
 class Redis
   # Distributed threshold and concurrency throttling.
   class Throttle
-    def initialize
+    def initialize(redis: nil, &redis_builder)
+      @redis      = redis || redis_builder || Redis.current
       @strategies = []
     end
 
@@ -23,18 +26,26 @@ class Redis
       self
     end
 
-    def call(redis, token:)
-      lock = acquire(redis, :token => token)
-      return lock unless block_given?
+    def call(token:)
+      with_redis do |redis|
+        lock = acquire(redis, :token => token)
+        return lock unless block_given?
 
-      begin
-        yield if lock
-      ensure
-        lock&.release(redis)
+        begin
+          yield if lock
+        ensure
+          lock&.release(redis)
+        end
       end
     end
 
     private
+
+    def with_redis
+      return yield @redis unless @redis.is_a? Proc
+
+      @redis.call { |redis| break yield redis }
+    end
 
     def acquire(redis, token:)
       keys = []
