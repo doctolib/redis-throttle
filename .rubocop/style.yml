@@ -79,3 +79,6 @@ Style/StringConcatenation:
 Style/StringLiterals:
   Enabled: true
   EnforcedStyle: double_quotes
+
+Style/YodaCondition:
+  Enabled: false
