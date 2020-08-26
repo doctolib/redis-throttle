@@ -14,7 +14,7 @@ module CommonMarker
       end
 
       def to_html
-        HtmlRenderer.new.render(@ast)
+        @ast.to_html(:UNSAFE)
       end
 
       private
