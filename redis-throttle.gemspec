@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
     else
       Dir.chdir(__dir__) do
         `git ls-files -z`.split("\x0").select do |f|
-          f.start_with?("lib/") || %w[CHANGES.md LICENSE.txt README.md].include?(f)
+          "LICENSE.txt" == f || f.start_with?("lib/")
         end
       end
     end
