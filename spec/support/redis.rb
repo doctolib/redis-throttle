@@ -21,5 +21,7 @@ RSpec.configure do |config|
     puts Terminal::Table.new({ :title => "REDIS", :rows => options })
   end
 
-  config.before { Redis.current.flushdb }
+  config.before do
+    (Redis.current.respond_to?(:namespace) ? Redis.current.redis : Redis.current).flushdb
+  end
 end
