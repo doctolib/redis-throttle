@@ -22,7 +22,7 @@ class Redis
       # @return [Boolean]
       def acquire(redis)
         Script
-          .eval(redis, [key], [lua_payload])
+          .eval(redis, [key], [lua_payload, Time.now.to_i])
           .zero?
       end
 
@@ -33,7 +33,7 @@ class Redis
       end
 
       def lua_payload(*)
-        JSON.dump(["threshold", [@limit, @period, Time.now.to_i]])
+        JSON.dump(["threshold", [@limit, @period]])
       end
     end
   end
