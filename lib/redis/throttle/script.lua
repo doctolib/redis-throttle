@@ -33,9 +33,9 @@ local strategies = {
 }
 
 for i, bucket in ipairs(KEYS) do
-  local name, payload = unpack(cjson.decode(ARGV[i]))
+  local offset = (i - 1) * 3
 
-  if not strategies[name](bucket, unpack(payload)) then
+  if not strategies[ARGV[offset + 1]](bucket, tonumber(ARGV[offset + 2]), tonumber(ARGV[offset + 3])) then
     return 1
   end
 end

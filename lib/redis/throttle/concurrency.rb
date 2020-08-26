@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "json"
-
 require_relative "./script"
 
 class Redis
@@ -23,7 +21,7 @@ class Redis
       # @return [Boolean]
       def acquire(redis, token:)
         Script
-          .eval(redis, [key], [lua_payload, token.to_s, Time.now.to_i])
+          .eval(redis, [key], lua_payload << token.to_s << Time.now.to_i)
           .zero?
       end
 
@@ -41,7 +39,7 @@ class Redis
       end
 
       def lua_payload
-        JSON.dump(["concurrency", [@limit, @ttl]])
+        ["concurrency", @limit, @ttl]
       end
     end
   end
