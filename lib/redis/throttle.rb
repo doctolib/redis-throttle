@@ -53,7 +53,7 @@ class Redis
 
       @strategies.each do |strategy|
         keys << strategy.key
-        argv << strategy.lua_payload
+        argv.concat strategy.lua_payload
       end
 
       acquired = Script.eval(redis, keys, argv << token << Time.now.to_i).zero?
