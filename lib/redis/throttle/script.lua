@@ -1,4 +1,5 @@
 local now = tonumber(ARGV[#ARGV])
+local token = ARGV[#ARGV - 1]
 local locks = {}
 local strategies = {
   threshold = function (bucket, limit, period)
@@ -15,7 +16,7 @@ local strategies = {
     return true
   end,
 
-  concurrency = function (bucket, token, limit, ttl)
+  concurrency = function (bucket, limit, ttl)
     redis.call("ZREMRANGEBYSCORE", bucket, "-inf", "(" .. now)
 
     if redis.call("ZCARD", bucket) < limit or redis.call("ZSCORE", bucket, token) then
