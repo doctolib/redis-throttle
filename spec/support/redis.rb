@@ -15,8 +15,11 @@ REDIS =
 
 RSpec.configure do |config|
   config.before :suite do
-    options = REDIS._client.options.slice(:url, :scheme, :host, :port, :db)
-    options[:namespace] = REDIS.namespace if REDIS.respond_to?(:namespace)
+    options = %i[host port db].map { |k| [k, REDIS._client.options[k]] }
+
+    options << [:namespace, REDIS.namespace] if REDIS.respond_to?(:namespace)
+    options << ["server version", REDIS.info["redis_version"]]
+    options << ["client version", Redis::VERSION]
 
     puts Terminal::Table.new({ :title => "REDIS", :rows => options })
   end
