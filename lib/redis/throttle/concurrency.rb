@@ -23,7 +23,7 @@ class Redis
       # @return [Boolean]
       def acquire(redis, token:)
         Script
-          .eval(redis, [key], [lua_payload(token)])
+          .eval(redis, [key], [lua_payload(token), Time.now.to_i])
           .zero?
       end
 
@@ -41,7 +41,7 @@ class Redis
       end
 
       def lua_payload(token)
-        JSON.dump(["concurrency", [token.to_s, @limit, @ttl, Time.now.to_i]])
+        JSON.dump(["concurrency", [token.to_s, @limit, @ttl]])
       end
     end
   end

@@ -56,7 +56,7 @@ class Redis
         argv << strategy.lua_payload(token)
       end
 
-      acquired = Script.eval(redis, keys, argv).zero?
+      acquired = Script.eval(redis, keys, argv << Time.now.to_i).zero?
       Lock.new(@strategies, :token => token) if acquired
     end
   end
