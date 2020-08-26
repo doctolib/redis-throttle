@@ -83,26 +83,26 @@ throttle = Redis::Throttle.new(:redis => Sidekiq.method(:redis))
 ```
 
 
-## Supported Ruby Versions
+## Compatibility
 
 This library aims to support and is tested against:
 
 * Ruby
-  * MRI 2.4.x
   * MRI 2.5.x
   * MRI 2.6.x
   * MRI 2.7.x
   * JRuby 9.2.x
-
+* Redis
+  * 4.x
+  * 5.x
+  * 6.x
 * [redis-rb](https://github.com/redis/redis-rb)
   * 4.0.x
   * 4.1.x
   * 4.2.x
-
 * [redis-namespace](https://github.com/resque/redis-namespace)
   * 1.6.x
   * 1.7.x
-
 
 If something doesn't work on one of these versions, it's a bug.
 
@@ -116,6 +116,8 @@ something breaks on your implementation, you will be responsible for providing
 patches in a timely fashion. If critical issues for a particular implementation
 exist at the time of a major release, support for that Ruby version may be
 dropped.
+
+Same rules apply to *Redis*, *redis-rb*, and *redis-namespace* support.
 
 
 ## Development
