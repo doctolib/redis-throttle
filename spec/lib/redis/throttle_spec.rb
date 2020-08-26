@@ -15,14 +15,6 @@ RSpec.describe Redis::Throttle, :frozen_time do
 
     before { allow(script).to receive(:eval).and_return(0) }
 
-    it "uses Redis.current by default" do
-      throttle = described_class.new << db
-
-      throttle.call(:token => "aye")
-
-      expect(script).to have_received(:eval).with(Redis.current, any_args)
-    end
-
     it "supports redis client builder" do
       require "connection_pool"
 
@@ -36,12 +28,31 @@ RSpec.describe Redis::Throttle, :frozen_time do
     end
 
     it "uses given redis instance" do
-      other_redis  = instance_double(Redis)
-      throttle     = described_class.new(:redis => other_redis) << db
+      redis    = double
+      throttle = described_class.new(:redis => redis) << db
 
       throttle.call(:token => "aye")
 
-      expect(script).to have_received(:eval).with(other_redis, any_args)
+      expect(script).to have_received(:eval).with(redis, any_args)
+    end
+
+    context "when no :redis given" do
+      it "uses Redis.current" do
+        throttle = described_class.new << db
+
+        throttle.call(:token => "aye")
+
+        expect(script).to have_received(:eval).with(Redis.current, any_args)
+      end
+
+      it "is always in sync with Redis.current" do
+        throttle      = described_class.new << db
+        Redis.current = double
+
+        throttle.call(:token => "aye")
+
+        expect(script).to have_received(:eval).with(Redis.current, any_args)
+      end
     end
   end
 

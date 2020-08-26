@@ -13,7 +13,7 @@ require_relative "./throttle/threshold"
 class Redis
   # Distributed threshold and concurrency throttling.
   class Throttle
-    def initialize(redis: Redis.current)
+    def initialize(redis: nil)
       @redis      = redis
       @strategies = []
     end
@@ -42,7 +42,7 @@ class Redis
     private
 
     def with_redis
-      return yield @redis unless @redis.is_a?(Proc) || @redis.is_a?(Method)
+      return yield(@redis || Redis.current) unless @redis.is_a?(Proc) || @redis.is_a?(Method)
 
       @redis.call { |redis| break yield redis }
     end
