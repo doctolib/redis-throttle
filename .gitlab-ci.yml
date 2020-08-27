@@ -10,17 +10,24 @@ before_script:
   - bundle config set without "development doc"
   - bundle install --jobs $(nproc)
 
+.test:
+  stage: test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+
 # Rubocop ######################################################################
 
 rubocop:
-  stage:     test
+  extends:   .test
   variables: { ruby: "ruby:2.5" }
   script:    bundle exec rubocop
 
 # RSpec ########################################################################
 
 rspec:
-  stage:     test
+  extends:   .test
   services:  [ "${redis}" ]
   variables: { REDIS_URL: "redis://redis:6379" }
   script:
