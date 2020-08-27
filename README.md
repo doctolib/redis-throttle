@@ -27,46 +27,45 @@ Or install it yourself as:
 ``` ruby
 # Allow 1 concurrent calls. If call takes more than 10 seconds, consider it
 # gone (as if process died, or by any other reason did not called `#release`):
-concurrency = Redis::Throttle::Concurrency.new(:bucket_name,
+concurrency = Redis::Throttle.concurrency(:bucket_name,
   :limit => 1,
   :ttl   => 10
 )
 
-concurrency.acquire(Redis.current, :token => "abc") # => true
-concurrency.acquire(Redis.current, :token => "xyz") # => false
+concurrency.acquire(:token => "abc") # => "abc"
+concurrency.acquire(:token => "xyz") # => nil
 
-concurrency.release(Redis.current, :token => "abc")
+concurrency.release(:token => "abc")
 
-concurrency.acquire(Redis.current, :token => "xyz") # => true
+concurrency.acquire(:token => "xyz") # => "xyz"
 ```
 
 ### Limit threshold
 
 ``` ruby
 # Allow 1 calls per 10 seconds:
-threshold = Redis::Throttle::Threshold.new(:bucket_name,
+threshold = Redis::Throttle.threshold(:bucket_name,
   :limit  => 1,
   :period => 10
 )
 
-threshold.acquire(Redis.current) # => true
-threshold.acquire(Redis.current) # => false
+threshold.acquire # => "6a6c6546-268d-4216-bcf3-3139b8e11609"
+threshold.acquire # => nil
 
 sleep 10
 
-threshold.acquire(Redis.current) # => true
+threshold.acquire # => "e2926a90-2cf4-4bff-9401-65f3a70d32bd"
 ```
 
 ### Multi-Strategy
 
 ``` ruby
-throttle = Redis::Throttle.new(:redis => Redis.current)
+throttle = Redis::Throttle
+  .concurrency(:db, :limit => 3, :ttl => 900)
+  .threshold(:api_minutely, :limit => 1, :period => 60)
+  .threshold(:api_hourly, :limit => 10, :period => 3600)
 
-throttle << Redis::Throttle::Concurrency.new(:db, :limit => 3, :ttl => 900)
-throttle << Redis::Throttle::Threshold.new(:api_minutely, :limit => 1, :period => 60)
-throttle << Redis::Throttle::Threshold.new(:api_hourly, :limit => 10, :period => 3600)
-
-throttle.call(Redis.current, :token => "abc") do
+throttle.call(:token => "abc") do
   # do something if all strategies are resolved
 end
 ```
@@ -75,8 +74,23 @@ end
 #### With ConnectionPool
 
 If you're using [connection_pool](https://github.com/mperham/connection_pool),
-e.g. in [Sidekiq](https://github.com/mperham/sidekiq) you can pass its `#with`
-method as connection builder:
+you can pass its `#with` method as connection builder:
+
+``` ruby
+pool     = ConnectionPool.new { Redis.new }
+throttle = Redis::Throttle.new(:redis => pool.method(:with))
+```
+
+#### With Sidekiq
+
+[Sidekiq](https://github.com/mperham/sidekiq): uses ConnectionPool, so you can
+use the same approach:
+
+``` ruby
+throttle = Redis::Throttle.new(:redis => Sidekiq.redis_pool.method(:with))
+```
+
+Or, you can use its `.redis` method directly:
 
 ``` ruby
 throttle = Redis::Throttle.new(:redis => Sidekiq.method(:redis))

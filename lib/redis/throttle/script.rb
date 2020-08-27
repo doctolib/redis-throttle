@@ -7,8 +7,9 @@ require_relative "./errors"
 
 class Redis
   class Throttle
-    # Simple helper to run script by it's sha1 digest with fallbak to script
-    # load if it was not loaded yet.
+    # @api private
+    #
+    # Lazy-compile and run acquire script by it's sha1 digest.
     module Script
       # Redis error fired when script ID is unkown.
       NOSCRIPT = "NOSCRIPT"
