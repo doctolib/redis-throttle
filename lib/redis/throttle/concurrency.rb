@@ -56,8 +56,8 @@ class Redis
       #
       # Compare `self` with `other` strategy:
       #
-      # - Returns `nil` if `other` is neither {Concurrency} nor {Threshold}
-      # - Returns `1` if `other` is a {Threshold}
+      # - Returns `nil` if `other` is neither {Concurrency} nor {RateLimit}
+      # - Returns `1` if `other` is a {RateLimit}
       # - Returns `1` if `other` is a {Concurrency} with lower {#limit}
       # - Returns `0` if `other` is a {Concurrency} with the same {#limit}
       # - Returns `-1` if `other` is a {Concurrency} with bigger {#limit}

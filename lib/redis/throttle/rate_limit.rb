@@ -2,7 +2,7 @@
 
 class Redis
   class Throttle
-    class Threshold
+    class RateLimit
       # @!attribute [r] bucket
       #   @return [String] Throttling group name
       attr_reader :bucket
@@ -31,12 +31,12 @@ class Redis
 
       # @api private
       def payload
-        ["threshold", @limit, @period]
+        ["rate_limit", @limit, @period]
       end
 
       # @api private
       #
-      # Returns `true` if `other` is a {Threshold} instance with the same
+      # Returns `true` if `other` is a {RateLimit} instance with the same
       # {#bucket}, {#limit}, and {#period}.
       #
       # @see https://docs.ruby-lang.org/en/master/Object.html#method-i-eql-3F
@@ -52,11 +52,11 @@ class Redis
       #
       # Compare `self` with `other` strategy:
       #
-      # - Returns `nil` if `other` is neither {Concurrency} nor {Threshold}
+      # - Returns `nil` if `other` is neither {Concurrency} nor {RateLimit}
       # - Returns `-1` if `other` is a {Concurrency}
-      # - Returns `1` if `other` is a {Threshold} with lower {#limit}
-      # - Returns `0` if `other` is a {Threshold} with the same {#limit}
-      # - Returns `-1` if `other` is a {Threshold} with bigger {#limit}
+      # - Returns `1` if `other` is a {RateLimit} with lower {#limit}
+      # - Returns `0` if `other` is a {RateLimit} with the same {#limit}
+      # - Returns `-1` if `other` is a {RateLimit} with bigger {#limit}
       #
       # @return [-1, 0, 1, nil]
       def <=>(other)

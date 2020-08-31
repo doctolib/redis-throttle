@@ -13,14 +13,14 @@ class Redis
         new(:redis => redis).concurrency(bucket, :limit => limit, :ttl => ttl)
       end
 
-      # Syntax sugar for {Throttle#threshold}.
+      # Syntax sugar for {Throttle#rate_limit}.
       #
       # @see #concurrency
       # @param (see Throttle#initialize)
-      # @param (see Throttle#threshold)
-      # @return (see Throttle#threshold)
-      def threshold(bucket, redis: nil, limit:, period:)
-        new(:redis => redis).threshold(bucket, :limit => limit, :period => period)
+      # @param (see Throttle#rate_limit)
+      # @return (see Throttle#rate_limit)
+      def rate_limit(bucket, redis: nil, limit:, period:)
+        new(:redis => redis).rate_limit(bucket, :limit => limit, :period => period)
       end
     end
   end

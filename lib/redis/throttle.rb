@@ -8,12 +8,12 @@ require_relative "./throttle/errors"
 require_relative "./throttle/class_methods"
 require_relative "./throttle/concurrency"
 require_relative "./throttle/script"
-require_relative "./throttle/threshold"
+require_relative "./throttle/rate_limit"
 require_relative "./throttle/version"
 
 # @see https://github.com/redis/redis-rb
 class Redis
-  # Distributed threshold and concurrency throttling.
+  # Distributed rate limit and concurrency throttling.
   class Throttle
     extend ClassMethods
 
@@ -73,14 +73,14 @@ class Redis
       self
     end
 
-    # Add *threshold* strategy to the throttle. Use it to guarantee `limit`
-    # amount of code block runs in `period` of time.
+    # Add *rate limit* strategy to the throttle. Use it to guarantee `limit`
+    # amount of units in `period` of time.
     #
     # @example
     #   throttle = Redis::Throttle.new
     #
     #   # Allow 2 execution units per 10 seconds
-    #   throttle.threshold(:xxx, :limit => 2, :period => 10)
+    #   throttle.rate_limit(:xxx, :limit => 2, :period => 10)
     #
     #   throttle.acquire && :aye || :nay # => :aye
     #   sleep 5
@@ -92,12 +92,12 @@ class Redis
     #   throttle.acquire && :aye || :nay # => :aye
     #   throttle.acquire && :aye || :nay # => :nay
     #
-    # @param (see Threshold#initialize)
+    # @param (see RateLimit#initialize)
     # @return [Throttle] self
-    def threshold(bucket, limit:, period:)
+    def rate_limit(bucket, limit:, period:)
       raise FrozenError, "can't modify frozen #{self.class}" if frozen?
 
-      @strategies << Threshold.new(bucket, :limit => limit, :period => period)
+      @strategies << RateLimit.new(bucket, :limit => limit, :period => period)
 
       self
     end
@@ -106,10 +106,10 @@ class Redis
     #
     # @example
     #   a = Redis::Throttle.concurrency(:a, :limit => 1, :ttl => 2)
-    #   b = Redis::Throttle.threshold(:b, :limit => 3, :period => 4)
+    #   b = Redis::Throttle.rate_limit(:b, :limit => 3, :period => 4)
     #   c = Redis::Throttle
     #     .concurrency(:a, :limit => 1, :ttl => 2)
-    #     .threshold(:b, :limit => 3, :period => 4)
+    #     .rate_limit(:b, :limit => 3, :period => 4)
     #
     #   a.merge!(b)
     #
@@ -131,10 +131,10 @@ class Redis
     #
     # @example
     #   a = Redis::Throttle.concurrency(:a, :limit => 1, :ttl => 2)
-    #   b = Redis::Throttle.threshold(:b, :limit => 3, :period => 4)
+    #   b = Redis::Throttle.rate_limit(:b, :limit => 3, :period => 4)
     #   c = Redis::Throttle
     #     .concurrency(:a, :limit => 1, :ttl => 2)
-    #     .threshold(:b, :limit => 3, :period => 4)
+    #     .rate_limit(:b, :limit => 3, :period => 4)
     #
     #   a.merge(b) == c # => true
     #   a == c          # => false
@@ -162,10 +162,10 @@ class Redis
     # @example
     #   a = Redis::Throttle
     #     .concurrency(:a, :limit => 1, :ttl => 2)
-    #     .threshold(:b, :limit => 3, :period => 4)
+    #     .rate_limit(:b, :limit => 3, :period => 4)
     #
     #   b = Redis::Throttle
-    #     .threshold(:b, :limit => 3, :period => 4)
+    #     .rate_limit(:b, :limit => 3, :period => 4)
     #     .concurrency(:a, :limit => 1, :ttl => 2)
     #
     #   a == b # => true
@@ -233,14 +233,14 @@ class Redis
     #
     # @example
     #   concurrency = Redis::Throttle.concurrency(:xxx, :limit => 1, :ttl => 60)
-    #   threshold   = Redis::Throttle.threshold(:xxx, :limit => 1, :period => 60)
-    #   throttle    = concurrency | threshold
+    #   rate_limit   = Redis::Throttle.rate_limit(:xxx, :limit => 1, :period => 60)
+    #   throttle    = concurrency | rate_limit
     #
     #   throttle.acquire(:token => "uno")
     #   throttle.release(:token => "uno")
     #
     #   concurrency.acquire(:token => "dos") => "dos"
-    #   threshold.acquire(:token => "dos")   => nil
+    #   rate_limit.acquire(:token => "dos")   => nil
     #
     # @see #acquire
     # @see #reset
