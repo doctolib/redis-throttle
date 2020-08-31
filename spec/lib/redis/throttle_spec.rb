@@ -6,6 +6,8 @@ require "redis/throttle"
 RSpec.describe Redis::Throttle, :frozen_time do
   subject(:throttle) { described_class.new }
 
+  before { stub_const("FrozenError", described_class::FrozenError) } if RUBY_VERSION < "2.5"
+
   describe ".new" do
     let(:script) { described_class::Script }
 
