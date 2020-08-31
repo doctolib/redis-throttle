@@ -156,6 +156,15 @@ push git commits and tags, and push the `.gem` file to [rubygems.org][].
 * If we've accepted a patch, feel free to ask for commit access!
 
 
+## Appreciations
+
+Huge thanks to [@freemanoid][] and [@petethepig][] for the code review,
+criticism, and suggestions.
+
+[@freemanoid]: https://gitlab.com/freemanoid
+[@petethepig]: https://gitlab.com/petethepig
+
+
 ## Copyright
 
 Copyright (c) 2020 Alexey Zapparov<br>
