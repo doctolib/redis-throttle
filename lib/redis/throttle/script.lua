@@ -2,7 +2,7 @@ local now = tonumber(ARGV[#ARGV])
 local token = ARGV[#ARGV - 1]
 local locks = {}
 local strategies = {
-  threshold = function (bucket, limit, period)
+  rate_limit = function (bucket, limit, period)
     if limit <= redis.call("LLEN", bucket) and now - redis.call("LINDEX", bucket, -1) < period then
       return false
     end

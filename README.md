@@ -1,6 +1,6 @@
 # Redis::Throttle
 
-[Redis](https://redis.io/) based threshold and concurrency throttling.
+[Redis](https://redis.io/) based rate limit and concurrency throttling.
 
 
 ## Installation
@@ -22,7 +22,7 @@ Or install it yourself as:
 
 ## Usage
 
-### Limit concurrency
+### Concurrency Limit
 
 ``` ruby
 # Allow 1 concurrent calls. If call takes more than 10 seconds, consider it
@@ -40,21 +40,21 @@ concurrency.release(:token => "abc")
 concurrency.acquire(:token => "xyz") # => "xyz"
 ```
 
-### Limit threshold
+### Rate Limit
 
 ``` ruby
 # Allow 1 calls per 10 seconds:
-threshold = Redis::Throttle.threshold(:bucket_name,
+rate_limit = Redis::Throttle.rate_limit(:bucket_name,
   :limit  => 1,
   :period => 10
 )
 
-threshold.acquire # => "6a6c6546-268d-4216-bcf3-3139b8e11609"
-threshold.acquire # => nil
+rate_limit.acquire # => "6a6c6546-268d-4216-bcf3-3139b8e11609"
+rate_limit.acquire # => nil
 
 sleep 10
 
-threshold.acquire # => "e2926a90-2cf4-4bff-9401-65f3a70d32bd"
+rate_limit.acquire # => "e2926a90-2cf4-4bff-9401-65f3a70d32bd"
 ```
 
 ### Multi-Strategy
@@ -62,8 +62,8 @@ threshold.acquire # => "e2926a90-2cf4-4bff-9401-65f3a70d32bd"
 ``` ruby
 throttle = Redis::Throttle
   .concurrency(:db, :limit => 3, :ttl => 900)
-  .threshold(:api_minutely, :limit => 1, :period => 60)
-  .threshold(:api_hourly, :limit => 10, :period => 3600)
+  .rate_limit(:api_minutely, :limit => 1, :period => 60)
+  .rate_limit(:api_hourly, :limit => 10, :period => 3600)
 
 throttle.call(:token => "abc") do
   # do something if all strategies are resolved

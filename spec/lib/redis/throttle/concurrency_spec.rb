@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "redis/throttle/concurrency"
-require "redis/throttle/threshold"
+require "redis/throttle/rate_limit"
 
 RSpec.describe Redis::Throttle::Concurrency do
   subject(:concurrency) { described_class.new(:acab, :limit => 13, :ttl => 12) }
@@ -79,13 +79,13 @@ RSpec.describe Redis::Throttle::Concurrency do
       it { is_expected.to eq 0 }
     end
 
-    context "when other is an instance of Threshold" do
-      let(:other) { Redis::Throttle::Threshold.new(bucket, :limit => limit, :period => 123) }
+    context "when other is an instance of RateLimit" do
+      let(:other) { Redis::Throttle::RateLimit.new(bucket, :limit => limit, :period => 123) }
 
       it { is_expected.to eq 1 }
     end
 
-    context "when other is neither Concurrency nor Threshold" do
+    context "when other is neither Concurrency nor RateLimit" do
       let(:other) { double }
 
       it { is_expected.to be_nil }

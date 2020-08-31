@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Alexey Zapparov"]
   spec.email         = ["alexey@zapparov.com"]
 
-  spec.summary       = "Redis based threshold and concurrency throttling."
+  spec.summary       = "Redis based rate limit and concurrency throttling."
   spec.homepage      = "https://gitlab.com/ixti/redis-throttle"
   spec.license       = "MIT"
 
