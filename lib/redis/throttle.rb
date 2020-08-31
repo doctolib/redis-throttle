@@ -7,8 +7,8 @@ require "securerandom"
 require_relative "./throttle/errors"
 require_relative "./throttle/class_methods"
 require_relative "./throttle/concurrency"
-require_relative "./throttle/script"
 require_relative "./throttle/rate_limit"
+require_relative "./throttle/script"
 require_relative "./throttle/version"
 
 # @see https://github.com/redis/redis-rb
