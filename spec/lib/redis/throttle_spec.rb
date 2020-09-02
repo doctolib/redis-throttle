@@ -9,51 +9,13 @@ RSpec.describe Redis::Throttle, :frozen_time do
   before { stub_const("FrozenError", described_class::FrozenError) } if RUBY_VERSION < "2.5"
 
   describe ".new" do
-    let(:script) { described_class::Script }
+    it "proxies redis to Api as is" do
+      allow(described_class::Api).to receive(:new).and_call_original
 
-    before { allow(script).to receive(:eval).and_return(0) }
-
-    it "supports redis client builder" do
-      require "connection_pool"
-
-      redis           = Redis.new
-      connection_pool = ConnectionPool.new { redis }
-
-      described_class
-        .new(:redis => connection_pool.method(:with))
-        .concurrency(:example, :limit => 1, :ttl => 60)
-        .acquire
-
-      expect(script).to have_received(:eval).with(redis, any_args)
-    end
-
-    it "uses given redis instance" do
       redis = Redis.new
+      described_class.new(:redis => redis)
 
-      described_class
-        .new(:redis => redis)
-        .concurrency(:example, :limit => 1, :ttl => 60)
-        .acquire
-
-      expect(script).to have_received(:eval).with(redis, any_args)
-    end
-
-    context "when no :redis given" do
-      it "uses Redis.current" do
-        described_class.new.concurrency(:example, :limit => 1, :ttl => 1).acquire
-
-        expect(script).to have_received(:eval).with(Redis.current, any_args)
-      end
-
-      it "is always in sync with Redis.current" do
-        Redis.current = double
-        throttle      = described_class.new.concurrency(:example, :limit => 1, :ttl => 1)
-        Redis.current = Redis.new
-
-        throttle.acquire
-
-        expect(script).to have_received(:eval).with(Redis.current, any_args)
-      end
+      expect(described_class::Api).to have_received(:new).with(:redis => redis)
     end
   end
 
