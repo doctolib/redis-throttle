@@ -43,7 +43,10 @@ class Redis
       # @param other [Object]
       # @return [Boolean]
       def ==(other)
-        equal?(other) || (other.is_a?(self.class) && key == other.key)
+        return true  if equal? other
+        return false unless other.is_a?(self.class)
+
+        @bucket == other.bucket && @limit == other.limit && @period == other.period
       end
 
       alias eql? ==
@@ -70,7 +73,7 @@ class Redis
       # @see https://docs.ruby-lang.org/en/master/Object.html#method-i-hash
       # @return [Integer]
       def hash
-        key.hash
+        @hash ||= [@bucket, @limit, @period].hash
       end
 
       # @api private
