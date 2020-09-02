@@ -4,11 +4,11 @@ require "redis"
 require "set"
 require "securerandom"
 
+require_relative "./throttle/api"
 require_relative "./throttle/errors"
 require_relative "./throttle/class_methods"
 require_relative "./throttle/concurrency"
 require_relative "./throttle/rate_limit"
-require_relative "./throttle/script"
 require_relative "./throttle/version"
 
 # @see https://github.com/redis/redis-rb
@@ -17,9 +17,9 @@ class Redis
   class Throttle
     extend ClassMethods
 
-    # @param redis [Redis, Redis::Namespace, #to_proc]
+    # @param (see Api#initialize)
     def initialize(redis: nil)
-      @redis      = redis.respond_to?(:to_proc) ? redis.to_proc : redis
+      @api        = Api.new(:redis => redis)
       @strategies = SortedSet.new
     end
 
@@ -220,12 +220,7 @@ class Redis
     # @return [#to_s] `token` as is if lock was acquired
     # @return [nil] otherwise
     def acquire(token: SecureRandom.uuid)
-      with_redis do |redis|
-        keys = @strategies.map(&:key)
-        argv = @strategies.flat_map(&:payload) << token.to_s << Time.now.to_i
-
-        token if Script.eval(redis, keys, argv).zero?
-      end
+      token if @api.acquire(:strategies => @strategies, :token => token.to_s)
     end
 
     # Release acquired execution lock. Notice that this affects {#concurrency}
@@ -248,13 +243,7 @@ class Redis
     # @param token [#to_s] Unit of work ID
     # @return [void]
     def release(token:)
-      token = token.to_s
-
-      with_redis do |redis|
-        @strategies.each do |strategy|
-          redis.zrem(strategy.key, token) if strategy.is_a?(Concurrency)
-        end
-      end
+      @api.release(:strategies => @strategies, :token => token.to_s)
 
       nil
     end
@@ -275,7 +264,7 @@ class Redis
     #
     # @return [void]
     def reset
-      with_redis { |redis| redis.del(*@strategies.map(&:key)) }
+      @api.reset(:strategies => @strategies)
 
       nil
     end
@@ -283,15 +272,5 @@ class Redis
     protected
 
     attr_accessor :strategies
-
-    private
-
-    # @yield [redis] Gives redis client to the block.
-    # @return [Object] result of the block
-    def with_redis
-      return yield(@redis || Redis.current) unless @redis.is_a?(Proc)
-
-      @redis.call { |redis| break yield redis }
-    end
   end
 end
