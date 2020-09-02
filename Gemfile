@@ -24,7 +24,7 @@ group :test do
   gem "rubocop"
   gem "rubocop-performance"
   gem "rubocop-rspec"
-  gem "simplecov"
+  gem "simplecov", :require => false
   gem "terminal-table"
   gem "timecop"
 end

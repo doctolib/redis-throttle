@@ -32,12 +32,12 @@ rspec:
   variables: { REDIS_URL: "redis://redis:6379" }
   script:
     - bundle exec appraisal install --jobs $(nproc)
-    - bundle exec appraisal rspec
+    - REDIS_NAMESPACE="" bundle exec appraisal rspec
+    - REDIS_NAMESPACE="xxx" bundle exec appraisal rspec
   parallel:
     matrix:
       - redis:           [ "redis:4", "redis:5", "redis:6" ]
         ruby:            [ "ruby:2.4", "ruby:2.5", "ruby:2.6", "ruby:2.7", "jruby:9.2" ]
-        REDIS_NAMESPACE: [ "", "xxx" ]
 
 # YARD #########################################################################
 
