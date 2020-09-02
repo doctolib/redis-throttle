@@ -1,8 +1,9 @@
 AllCops:
-  TargetRubyVersion: 2.4
   Exclude:
     - gemfiles/**/*
     - vendor/**/*
+  NewCops: enable
+  TargetRubyVersion: 2.4
 
 require:
   - rubocop-performance

@@ -9,7 +9,7 @@ class Redis
       # @param (see Throttle#initialize)
       # @param (see Throttle#concurrency)
       # @return (see Throttle#concurrency)
-      def concurrency(bucket, redis: nil, limit:, ttl:)
+      def concurrency(bucket, limit:, ttl:, redis: nil)
         new(:redis => redis).concurrency(bucket, :limit => limit, :ttl => ttl)
       end
 
@@ -19,7 +19,7 @@ class Redis
       # @param (see Throttle#initialize)
       # @param (see Throttle#rate_limit)
       # @return (see Throttle#rate_limit)
-      def rate_limit(bucket, redis: nil, limit:, period:)
+      def rate_limit(bucket, limit:, period:, redis: nil)
         new(:redis => redis).rate_limit(bucket, :limit => limit, :period => period)
       end
     end
