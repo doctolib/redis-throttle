@@ -17,6 +17,13 @@ before_script:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_PIPELINE_SOURCE == "web"'
 
+# Rubocop ######################################################################
+
+rubocop:
+  extends:   .test
+  variables: { ruby: "ruby:2.5" }
+  script:    bundle exec rubocop
+
 # RSpec ########################################################################
 
 rspec:
@@ -29,20 +36,8 @@ rspec:
     - REDIS_NAMESPACE="xxx" bundle exec appraisal rspec
   parallel:
     matrix:
-      - { ruby: "ruby:2.7",  redis: "redis:6", COVERAGE: "1" }
-      - { ruby: "ruby:2.7",  redis: "redis:5" }
-      - { ruby: "ruby:2.7",  redis: "redis:4" }
-      - { ruby: "ruby:2.6",  redis: "redis:6" }
-      - { ruby: "ruby:2.5",  redis: "redis:6" }
-      - { ruby: "ruby:2.4",  redis: "redis:6" }
-      - { ruby: "jruby:9.2", redis: "redis:6" }
-
-# Rubocop ######################################################################
-
-rubocop:
-  extends:   .test
-  variables: { ruby: "ruby:2.4" }
-  script:    bundle exec rubocop
+      - redis:           [ "redis:4", "redis:5", "redis:6" ]
+        ruby:            [ "ruby:2.4", "ruby:2.5", "ruby:2.6", "ruby:2.7", "jruby:9.2" ]
 
 # YARD #########################################################################
 
