@@ -102,6 +102,7 @@ throttle = Redis::Throttle.new(:redis => Sidekiq.method(:redis))
 This library aims to support and is tested against:
 
 * Ruby
+  * MRI 2.4.x
   * MRI 2.5.x
   * MRI 2.6.x
   * MRI 2.7.x
