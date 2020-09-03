@@ -3,6 +3,5 @@
 require "simplecov"
 
 SimpleCov.start do
-  enable_coverage :branch
-  add_filter "/spec/"
+  command_name "REDIS_NAMESPACE=#{ENV['REDIS_NAMESPACE']}"
 end
