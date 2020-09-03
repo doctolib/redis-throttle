@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "./api"
+
 class Redis
   class Throttle
     module ClassMethods
@@ -21,6 +23,22 @@ class Redis
       # @return (see Throttle#rate_limit)
       def rate_limit(bucket, limit:, period:, redis: nil)
         new(:redis => redis).rate_limit(bucket, :limit => limit, :period => period)
+      end
+
+      # Return usage info for all known (in use) strategies.
+      #
+      # @example
+      #   Redis::Throttle.info(:match => "*_api").each do |strategy, current_value|
+      #     # ...
+      #   end
+      #
+      # @param match [#to_s]
+      # @return (see Api#info)
+      def info(match: "*", redis: nil)
+        api        = Api.new(:redis => redis)
+        strategies = api.strategies(:match => match.to_s)
+
+        api.info(:strategies => strategies)
       end
     end
   end
