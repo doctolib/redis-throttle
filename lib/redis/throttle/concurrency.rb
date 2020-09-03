@@ -26,20 +26,6 @@ class Redis
         @ttl    = ttl.to_i
       end
 
-      # @api private
-      def key
-        "throttle:#{@bucket}:c:#{@limit}:#{@ttl}"
-      end
-
-      alias to_s key
-
-      # @api private
-      def payload
-        ["concurrency", @limit, @ttl]
-      end
-
-      # @api private
-      #
       # Returns `true` if `other` is a {Concurrency} instance with the same
       # {#bucket}, {#limit}, and {#ttl}.
       #
