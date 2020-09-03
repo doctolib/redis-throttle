@@ -13,6 +13,17 @@ class Redis
       NAMESPACE = "throttle"
       private_constant :NAMESPACE
 
+      KEYS_PATTERN = %r{
+        \A
+        #{NAMESPACE}:
+        (?<strategy>concurrency|rate_limit):
+        (?<bucket>.+):
+        (?<limit>\d+):
+        (?<ttl_or_period>\d+)
+        \z
+      }x.freeze
+      private_constant :KEYS_PATTERN
+
       ACQUIRE = Script.new(File.read("#{__dir__}/api/acquire.lua"))
       private_constant :ACQUIRE
 
@@ -21,6 +32,9 @@ class Redis
 
       RESET = Script.new(File.read("#{__dir__}/api/reset.lua"))
       private_constant :RESET
+
+      INFO = Script.new(File.read("#{__dir__}/api/info.lua"))
+      private_constant :INFO
 
       # @param redis [Redis, Redis::Namespace, #to_proc]
       def initialize(redis: nil)
@@ -52,8 +66,27 @@ class Redis
         execute(RESET, to_params(strategies))
       end
 
-      # Ping server.
-      #
+      # @param match [String]
+      # @return [Array<Concurrency, RateLimit>]
+      def strategies(match:)
+        results = []
+
+        @redis.call do |redis|
+          redis.scan_each(:match => "#{NAMESPACE}:*:#{match}:*:*") do |key|
+            strategy = from_key(key)
+            results << strategy if strategy
+          end
+        end
+
+        results
+      end
+
+      # @param strategies [Enumerable<Concurrency, RateLimit>]
+      # @return [Hash{Concurrency => Integer, RateLimit => Integer}]
+      def info(strategies:)
+        strategies.zip(execute(INFO, to_params(strategies))).to_h
+      end
+
       # @note Used for specs only.
       # @return [void]
       def ping
@@ -64,6 +97,17 @@ class Redis
 
       def execute(script, argv)
         @redis.call { |redis| script.call(redis, :keys => [NAMESPACE], :argv => argv) }
+      end
+
+      def from_key(key)
+        md = KEYS_PATTERN.match(key)
+
+        case md && md[:strategy]
+        when "concurrency"
+          Concurrency.new(md[:bucket], :limit => md[:limit], :ttl => md[:ttl_or_period])
+        when "rate_limit"
+          RateLimit.new(md[:bucket], :limit => md[:limit], :period => md[:ttl_or_period])
+        end
       end
 
       def to_params(strategies)

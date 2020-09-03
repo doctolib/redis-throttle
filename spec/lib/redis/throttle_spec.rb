@@ -53,6 +53,28 @@ RSpec.describe Redis::Throttle, :frozen_time do
     end
   end
 
+  describe ".info" do
+    before do
+      described_class
+        .concurrency(:abc, :limit => 1, :ttl => 60)
+        .rate_limit(:xyz, :limit => 1, :period => 60)
+        .acquire
+    end
+
+    it "returns usage info for all strategies in use" do
+      expect(described_class.info).to eq({
+        described_class::Concurrency.new(:abc, :limit => 1, :ttl => 60)  => 1,
+        described_class::RateLimit.new(:xyz, :limit => 1, :period => 60) => 1
+      })
+    end
+
+    it "supports filtering" do
+      expect(described_class.info(:match => "a*")).to eq({
+        described_class::Concurrency.new(:abc, :limit => 1, :ttl => 60) => 1
+      })
+    end
+  end
+
   describe "#dup" do
     it "copies strategies" do
       original_strategies = throttle.instance_variable_get(:@strategies)
@@ -355,6 +377,21 @@ RSpec.describe Redis::Throttle, :frozen_time do
         expect(concurrency.acquire).to be_truthy
         expect(rate_limit.acquire).to be_truthy
       end
+    end
+  end
+
+  describe "#info" do
+    let(:throttle)    { concurrency | rate_limit }
+    let(:concurrency) { described_class.concurrency(:abc, :limit => 1, :ttl => 60) }
+    let(:rate_limit)  { described_class.rate_limit(:xyz, :limit => 1, :period => 60) }
+
+    it "returns usage info for all strategies of the throttle" do
+      concurrency.acquire
+
+      expect(throttle.info).to eq({
+        described_class::Concurrency.new(:abc, :limit => 1, :ttl => 60)  => 1,
+        described_class::RateLimit.new(:xyz, :limit => 1, :period => 60) => 0
+      })
     end
   end
 end

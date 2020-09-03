@@ -269,6 +269,18 @@ class Redis
       nil
     end
 
+    # Return usage info for all strategies of the throttle.
+    #
+    # @example
+    #   throttle.info.each do |strategy, current_value|
+    #     # ...
+    #   end
+    #
+    # @return (see Api#info)
+    def info
+      @api.info(:strategies => @strategies)
+    end
+
     protected
 
     attr_accessor :strategies
