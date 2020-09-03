@@ -10,8 +10,17 @@ class Redis
   class Throttle
     # @api private
     class Api
+      NAMESPACE = "throttle"
+      private_constant :NAMESPACE
+
       ACQUIRE = Script.new(File.read("#{__dir__}/api/acquire.lua"))
       private_constant :ACQUIRE
+
+      RELEASE = Script.new(File.read("#{__dir__}/api/release.lua"))
+      private_constant :RELEASE
+
+      RESET = Script.new(File.read("#{__dir__}/api/reset.lua"))
+      private_constant :RESET
 
       # @param redis [Redis, Redis::Namespace, #to_proc]
       def initialize(redis: nil)
@@ -27,29 +36,20 @@ class Redis
       # @param token [String]
       # @return [Boolean]
       def acquire(strategies:, token:)
-        keys = strategies.map(&method(:to_key))
-        argv = strategies.flat_map(&method(:to_payload)) << token << Time.now.to_i
-
-        @redis.call { |redis| ACQUIRE.call(redis, :keys => keys, :argv => argv).zero? }
+        execute(ACQUIRE, to_params(strategies) << token << Time.now.to_i).zero?
       end
 
       # @param strategies [Enumerable<Concurrency, RateLimit>]
       # @param token [String]
       # @return [void]
       def release(strategies:, token:)
-        @redis.call do |redis|
-          redis.multi do
-            strategies.each do |strategy|
-              redis.zrem(to_key(strategy), token) if strategy.is_a?(Concurrency)
-            end
-          end
-        end
+        execute(RELEASE, to_params(strategies.grep(Concurrency)) << token)
       end
 
       # @param strategies [Enumerable<Concurrency, RateLimit>]
       # @return [void]
       def reset(strategies:)
-        @redis.call { |redis| redis.del(*strategies.map(&method(:to_key))) }
+        execute(RESET, to_params(strategies))
       end
 
       # Ping server.
@@ -62,18 +62,23 @@ class Redis
 
       private
 
-      def to_key(strategy)
-        case strategy
-        when Concurrency then "throttle:#{strategy.bucket}:concurrency:#{strategy.limit}:#{strategy.ttl}"
-        when RateLimit   then "throttle:#{strategy.bucket}:rate_limit:#{strategy.limit}:#{strategy.period}"
-        end
+      def execute(script, argv)
+        @redis.call { |redis| script.call(redis, :keys => [NAMESPACE], :argv => argv) }
       end
 
-      def to_payload(strategy)
-        case strategy
-        when Concurrency then ["concurrency", strategy.limit, strategy.ttl]
-        when RateLimit   then ["rate_limit", strategy.limit, strategy.period]
+      def to_params(strategies)
+        result = []
+
+        strategies.each do |strategy|
+          case strategy
+          when Concurrency
+            result << "concurrency" << strategy.bucket << strategy.limit << strategy.ttl
+          when RateLimit
+            result << "rate_limit" << strategy.bucket << strategy.limit << strategy.period
+          end
         end
+
+        result
       end
     end
   end
