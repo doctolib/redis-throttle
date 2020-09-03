@@ -3,6 +3,8 @@
 require "redis"
 
 require_relative "./script"
+require_relative "./concurrency"
+require_relative "./rate_limit"
 
 class Redis
   class Throttle
@@ -25,8 +27,8 @@ class Redis
       # @param token [String]
       # @return [Boolean]
       def acquire(strategies:, token:)
-        keys = strategies.map(&:key)
-        argv = strategies.flat_map(&:payload) << token.to_s << Time.now.to_i
+        keys = strategies.map(&method(:to_key))
+        argv = strategies.flat_map(&method(:to_payload)) << token << Time.now.to_i
 
         @redis.call { |redis| ACQUIRE.call(redis, :keys => keys, :argv => argv).zero? }
       end
@@ -38,7 +40,7 @@ class Redis
         @redis.call do |redis|
           redis.multi do
             strategies.each do |strategy|
-              redis.zrem(strategy.key, token.to_s) if strategy.is_a?(Concurrency)
+              redis.zrem(to_key(strategy), token) if strategy.is_a?(Concurrency)
             end
           end
         end
@@ -47,7 +49,7 @@ class Redis
       # @param strategies [Enumerable<Concurrency, RateLimit>]
       # @return [void]
       def reset(strategies:)
-        @redis.call { |redis| redis.del(*strategies.map(&:key)) }
+        @redis.call { |redis| redis.del(*strategies.map(&method(:to_key))) }
       end
 
       # Ping server.
@@ -56,6 +58,22 @@ class Redis
       # @return [void]
       def ping
         @redis.call(&:ping)
+      end
+
+      private
+
+      def to_key(strategy)
+        case strategy
+        when Concurrency then "throttle:#{strategy.bucket}:concurrency:#{strategy.limit}:#{strategy.ttl}"
+        when RateLimit   then "throttle:#{strategy.bucket}:rate_limit:#{strategy.limit}:#{strategy.period}"
+        end
+      end
+
+      def to_payload(strategy)
+        case strategy
+        when Concurrency then ["concurrency", strategy.limit, strategy.ttl]
+        when RateLimit   then ["rate_limit", strategy.limit, strategy.period]
+        end
       end
     end
   end

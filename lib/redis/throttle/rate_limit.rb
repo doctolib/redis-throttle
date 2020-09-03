@@ -24,18 +24,6 @@ class Redis
         @period = period.to_i
       end
 
-      # @api private
-      def key
-        "throttle:#{@bucket}:t:#{@limit}:#{@period}"
-      end
-
-      # @api private
-      def payload
-        ["rate_limit", @limit, @period]
-      end
-
-      # @api private
-      #
       # Returns `true` if `other` is a {RateLimit} instance with the same
       # {#bucket}, {#limit}, and {#period}.
       #
