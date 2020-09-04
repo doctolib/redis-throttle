@@ -158,11 +158,12 @@ push git commits and tags, and push the `.gem` file to [rubygems.org][].
 
 ## Appreciations
 
-Huge thanks to [@freemanoid][] and [@petethepig][] for the code review,
-criticism, and suggestions.
+Huge thanks to [@freemanoid][], [@petethepig][], and [@dervus][] for criticism
+and suggestions.
 
 [@freemanoid]: https://gitlab.com/freemanoid
 [@petethepig]: https://gitlab.com/petethepig
+[@dervus]: https://gitlab.com/dervus
 
 
 ## Copyright

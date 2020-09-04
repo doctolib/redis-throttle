@@ -24,17 +24,8 @@ class Redis
       }x.freeze
       private_constant :KEYS_PATTERN
 
-      ACQUIRE = Script.new(File.read("#{__dir__}/api/acquire.lua"))
-      private_constant :ACQUIRE
-
-      RELEASE = Script.new(File.read("#{__dir__}/api/release.lua"))
-      private_constant :RELEASE
-
-      RESET = Script.new(File.read("#{__dir__}/api/reset.lua"))
-      private_constant :RESET
-
-      INFO = Script.new(File.read("#{__dir__}/api/info.lua"))
-      private_constant :INFO
+      SCRIPT = Script.new(File.read("#{__dir__}/api.lua"))
+      private_constant :SCRIPT
 
       # @param redis [Redis, Redis::Namespace, #to_proc]
       def initialize(redis: nil)
@@ -50,20 +41,20 @@ class Redis
       # @param token [String]
       # @return [Boolean]
       def acquire(strategies:, token:)
-        execute(ACQUIRE, to_params(strategies) << token << Time.now.to_i).zero?
+        execute(:ACQUIRE, to_params(strategies) << :TOKEN << token << :TS << Time.now.to_i).zero?
       end
 
       # @param strategies [Enumerable<Concurrency, RateLimit>]
       # @param token [String]
       # @return [void]
       def release(strategies:, token:)
-        execute(RELEASE, to_params(strategies.grep(Concurrency)) << token)
+        execute(:RELEASE, to_params(strategies.grep(Concurrency)) << :TOKEN << token)
       end
 
       # @param strategies [Enumerable<Concurrency, RateLimit>]
       # @return [void]
       def reset(strategies:)
-        execute(RESET, to_params(strategies))
+        execute(:RESET, to_params(strategies))
       end
 
       # @param match [String]
@@ -84,7 +75,7 @@ class Redis
       # @param strategies [Enumerable<Concurrency, RateLimit>]
       # @return [Hash{Concurrency => Integer, RateLimit => Integer}]
       def info(strategies:)
-        strategies.zip(execute(INFO, to_params(strategies) << Time.now.to_i)).to_h
+        strategies.zip(execute(:INFO, to_params(strategies) << :TS << Time.now.to_i)).to_h
       end
 
       # @note Used for specs only.
@@ -95,8 +86,8 @@ class Redis
 
       private
 
-      def execute(script, argv)
-        @redis.call { |redis| script.call(redis, :keys => [NAMESPACE], :argv => argv) }
+      def execute(command, argv)
+        @redis.call { |redis| SCRIPT.call(redis, :keys => [NAMESPACE], :argv => [command, *argv]) }
       end
 
       def from_key(key)
