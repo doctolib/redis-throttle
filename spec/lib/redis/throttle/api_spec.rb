@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "support/timecop"
 require "redis/throttle/api"
 
 RSpec.describe Redis::Throttle::Api do

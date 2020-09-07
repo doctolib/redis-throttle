@@ -84,7 +84,7 @@ class Redis
       # @param strategies [Enumerable<Concurrency, RateLimit>]
       # @return [Hash{Concurrency => Integer, RateLimit => Integer}]
       def info(strategies:)
-        strategies.zip(execute(INFO, to_params(strategies))).to_h
+        strategies.zip(execute(INFO, to_params(strategies) << Time.now.to_i)).to_h
       end
 
       # @note Used for specs only.

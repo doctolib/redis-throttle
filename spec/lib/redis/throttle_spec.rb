@@ -53,24 +53,38 @@ RSpec.describe Redis::Throttle, :frozen_time do
     end
   end
 
-  describe ".info" do
+  describe ".info", :frozen_time do
     before do
-      described_class
-        .concurrency(:abc, :limit => 1, :ttl => 60)
-        .rate_limit(:xyz, :limit => 1, :period => 60)
-        .acquire
+      throttle =
+        described_class
+          .concurrency(:abc, :limit => 3, :ttl => 60)
+          .rate_limit(:xyz, :limit => 3, :period => 60)
+
+      3.times do
+        Timecop.travel(10)
+        throttle.acquire
+      end
     end
 
     it "returns usage info for all strategies in use" do
       expect(described_class.info).to eq({
-        described_class::Concurrency.new(:abc, :limit => 1, :ttl => 60)  => 1,
-        described_class::RateLimit.new(:xyz, :limit => 1, :period => 60) => 1
+        described_class::Concurrency.new(:abc, :limit => 3, :ttl => 60)  => 3,
+        described_class::RateLimit.new(:xyz, :limit => 3, :period => 60) => 3
       })
     end
 
     it "supports filtering" do
       expect(described_class.info(:match => "a*")).to eq({
-        described_class::Concurrency.new(:abc, :limit => 1, :ttl => 60) => 1
+        described_class::Concurrency.new(:abc, :limit => 3, :ttl => 60) => 3
+      })
+    end
+
+    it "returns actual values" do
+      Timecop.travel(60)
+
+      expect(described_class.info).to eq({
+        described_class::Concurrency.new(:abc, :limit => 3, :ttl => 60)  => 1,
+        described_class::RateLimit.new(:xyz, :limit => 3, :period => 60) => 1
       })
     end
   end
@@ -382,15 +396,29 @@ RSpec.describe Redis::Throttle, :frozen_time do
 
   describe "#info" do
     let(:throttle)    { concurrency | rate_limit }
-    let(:concurrency) { described_class.concurrency(:abc, :limit => 1, :ttl => 60) }
-    let(:rate_limit)  { described_class.rate_limit(:xyz, :limit => 1, :period => 60) }
+    let(:concurrency) { described_class.concurrency(:abc, :limit => 3, :ttl => 60) }
+    let(:rate_limit)  { described_class.rate_limit(:xyz, :limit => 3, :period => 60) }
 
     it "returns usage info for all strategies of the throttle" do
       concurrency.acquire
 
       expect(throttle.info).to eq({
-        described_class::Concurrency.new(:abc, :limit => 1, :ttl => 60)  => 1,
-        described_class::RateLimit.new(:xyz, :limit => 1, :period => 60) => 0
+        described_class::Concurrency.new(:abc, :limit => 3, :ttl => 60)  => 1,
+        described_class::RateLimit.new(:xyz, :limit => 3, :period => 60) => 0
+      })
+    end
+
+    it "returns actual values", :frozen_time do
+      3.times do
+        Timecop.travel(10)
+        throttle.acquire
+      end
+
+      Timecop.travel(60)
+
+      expect(throttle.info).to eq({
+        described_class::Concurrency.new(:abc, :limit => 3, :ttl => 60)  => 1,
+        described_class::RateLimit.new(:xyz, :limit => 3, :period => 60) => 1
       })
     end
   end
