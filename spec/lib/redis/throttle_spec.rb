@@ -3,7 +3,7 @@
 require "support/timecop"
 require "redis/throttle"
 
-RSpec.describe Redis::Throttle, :frozen_time do
+RSpec.describe Redis::Throttle do
   subject(:throttle) { described_class.new }
 
   before { stub_const("FrozenError", described_class::FrozenError) } if RUBY_VERSION < "2.5"
@@ -156,7 +156,7 @@ RSpec.describe Redis::Throttle, :frozen_time do
       expect { rate_limit }.to raise_error(FrozenError, "can't modify frozen Redis::Throttle")
     end
 
-    it "allows max LIMIT units per PERIOD" do
+    it "allows max LIMIT units per PERIOD", :frozen_time do
       aggregate_failures do
         expect(rate_limit.acquire).to be_truthy
 
