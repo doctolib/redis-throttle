@@ -17,8 +17,10 @@ class Redis
 
       LUA_ERROR_MESSAGE = %r{
         ERR\s
-        (?<message>Error\s(?:compiling|running)\sscript\s\(.*?\)):\s
-        (?:[^:]+:\d+:\s)+
+        (?<message>Error\s(?:compiling|running)\sscript)
+        \s\([^()]+\):\s
+        (?:@[^:]+:\d+:\s)?
+        [^:]+:(?<loc>\d+):\s
         (?<details>.+)
       }x.freeze
       private_constant :LUA_ERROR_MESSAGE
@@ -34,7 +36,7 @@ class Redis
         md = LUA_ERROR_MESSAGE.match(e.message.to_s)
         raise unless md
 
-        raise ScriptError, [md[:message], md[:details]].compact.join(": ")
+        raise ScriptError, "#{md[:message]} @#{md[:loc]}: #{md[:details]}"
       end
 
       private
