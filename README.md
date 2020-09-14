@@ -57,7 +57,8 @@ sleep 10
 rate_limit.acquire # => "e2926a90-2cf4-4bff-9401-65f3a70d32bd"
 ```
 
-### Multi-Strategy
+
+### Multi-strategy
 
 ``` ruby
 throttle = Redis::Throttle
@@ -70,8 +71,21 @@ throttle.call(:token => "abc") do
 end
 ```
 
+You can also compose multiple throttlers together:
 
-#### With ConnectionPool
+``` ruby
+db_limiter  = Redis::Throttle.concurrency(:db, :limit => 3, :ttl => 900)
+api_limiter = Redis::Throttle
+  .rate_limit(:api_minutely, :limit => 1, :period => 60)
+  .rate_limit(:api_hourly, :limit => 10, :period => 3600)
+
+(db_limiter | api_limiter).call do
+  # ...
+end
+```
+
+
+### With ConnectionPool
 
 If you're using [connection_pool](https://github.com/mperham/connection_pool),
 you can pass its `#with` method as connection builder:
@@ -81,7 +95,7 @@ pool     = ConnectionPool.new { Redis.new }
 throttle = Redis::Throttle.new(:redis => pool.method(:with))
 ```
 
-#### With Sidekiq
+### With Sidekiq
 
 [Sidekiq](https://github.com/mperham/sidekiq): uses ConnectionPool, so you can
 use the same approach:
