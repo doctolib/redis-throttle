@@ -228,14 +228,14 @@ class Redis
     #
     # @example
     #   concurrency = Redis::Throttle.concurrency(:xxx, :limit => 1, :ttl => 60)
-    #   rate_limit   = Redis::Throttle.rate_limit(:xxx, :limit => 1, :period => 60)
+    #   rate_limit  = Redis::Throttle.rate_limit(:xxx, :limit => 1, :period => 60)
     #   throttle    = concurrency | rate_limit
     #
     #   throttle.acquire(:token => "uno")
     #   throttle.release(:token => "uno")
     #
-    #   concurrency.acquire(:token => "dos") => "dos"
-    #   rate_limit.acquire(:token => "dos")   => nil
+    #   concurrency.acquire(:token => "dos") # => "dos"
+    #   rate_limit.acquire(:token => "dos")  # => nil
     #
     # @see #acquire
     # @see #reset
