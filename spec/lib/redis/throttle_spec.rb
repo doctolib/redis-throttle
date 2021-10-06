@@ -231,6 +231,12 @@ RSpec.describe Redis::Throttle do
     end
   end
 
+  describe "#+" do
+    it "is an alias of #merge" do
+      expect(throttle.method(:+).original_name).to eq :merge
+    end
+  end
+
   describe "#|" do
     it "is an alias of #merge" do
       expect(throttle.method(:|).original_name).to eq :merge
