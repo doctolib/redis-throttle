@@ -79,7 +79,7 @@ api_limiter = Redis::Throttle
   .rate_limit(:api_minutely, :limit => 1, :period => 60)
   .rate_limit(:api_hourly, :limit => 10, :period => 3600)
 
-(db_limiter | api_limiter).call do
+(db_limiter + api_limiter).call do
   # ...
 end
 ```
