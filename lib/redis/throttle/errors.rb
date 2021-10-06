@@ -3,8 +3,7 @@
 class Redis
   class Throttle
     class Error < StandardError; end
-    class ScriptError < Error; end
 
-    class FrozenError < RuntimeError; end if RUBY_VERSION < "2.5"
+    class ScriptError < Error; end
   end
 end
