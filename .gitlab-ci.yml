@@ -21,7 +21,7 @@ before_script:
 
 rubocop:
   extends:   .test
-  variables: { ruby: "ruby:2.5" }
+  variables: { ruby: "ruby:2.6" }
   script:    bundle exec rubocop
 
 # RSpec ########################################################################
@@ -36,7 +36,7 @@ rspec:
   parallel:
     matrix:
       - redis:           [ "redis:4", "redis:5", "redis:6" ]
-        ruby:            [ "ruby:2.4", "ruby:2.5", "ruby:2.6", "ruby:2.7", "jruby:9.2" ]
+        ruby:            [ "ruby:2.6", "ruby:2.7", "jruby:9.2" ]
         REDIS_NAMESPACE: [ "", "xxx" ]
 
 # YARD #########################################################################
