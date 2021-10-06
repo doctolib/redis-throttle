@@ -182,7 +182,7 @@ and suggestions.
 
 ## Copyright
 
-Copyright (c) 2020 Alexey Zapparov<br>
+Copyright (c) 2020-2021 Alexey Zapparov<br>
 See [LICENSE.txt][] for further details.
 
 
