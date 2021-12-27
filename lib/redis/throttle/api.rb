@@ -41,7 +41,7 @@ class Redis
       # @param token [String]
       # @return [Boolean]
       def acquire(strategies:, token:)
-        execute(:ACQUIRE, to_params(strategies) << :TOKEN << token << :TS << Time.now.to_i).zero?
+        execute(:ACQUIRE, to_params(strategies.sort_by(&:itself)) << :TOKEN << token << :TS << Time.now.to_i).zero?
       end
 
       # @param strategies [Enumerable<Concurrency, RateLimit>]
