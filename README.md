@@ -129,8 +129,6 @@ This library aims to support and is tested against:
   * 4.3.x
   * 4.4.x
 * [redis-namespace](https://github.com/resque/redis-namespace)
-  * 1.6.x
-  * 1.7.x
   * 1.8.x
 
 If something doesn't work on one of these versions, it's a bug.
