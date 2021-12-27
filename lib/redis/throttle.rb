@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
+require "concurrent/set"
 require "redis"
-require "set"
 require "securerandom"
 
 require_relative "./throttle/api"
@@ -19,8 +19,9 @@ class Redis
 
     # @param (see Api#initialize)
     def initialize(redis: nil)
+      # TODO: fix api cloning/duping
       @api        = Api.new(:redis => redis)
-      @strategies = SortedSet.new
+      @strategies = Concurrent::Set.new
     end
 
     # @api private

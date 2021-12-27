@@ -36,14 +36,14 @@ rspec:
   parallel:
     matrix:
       - redis:           [ "redis:4", "redis:5", "redis:6" ]
-        ruby:            [ "ruby:2.6", "ruby:2.7" ]
+        ruby:            [ "ruby:2.6", "ruby:2.7", "ruby:3.0", "ruby:3.1" ]
         REDIS_NAMESPACE: [ "", "xxx" ]
 
 # YARD #########################################################################
 
 pages:
   stage:     deploy
-  variables: { ruby: "ruby:2.7" }
+  variables: { ruby: "ruby:3.1" }
   artifacts: { paths: [public] }
   before_script:
     - bundle config set without "development"

@@ -12,13 +12,13 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://gitlab.com/ixti/redis-throttle"
   spec.license       = "MIT"
 
-  spec.metadata["homepage_uri"]    = spec.homepage
-  spec.metadata["source_code_uri"] = "#{spec.homepage}/tree/v#{spec.version}"
-  spec.metadata["bug_tracker_uri"] = "#{spec.homepage}/issues"
-  spec.metadata["changelog_uri"]   = "#{spec.homepage}/blob/v#{spec.version}/CHANGES.md"
+  spec.metadata["homepage_uri"]          = spec.homepage
+  spec.metadata["source_code_uri"]       = "#{spec.homepage}/tree/v#{spec.version}"
+  spec.metadata["bug_tracker_uri"]       = "#{spec.homepage}/issues"
+  spec.metadata["changelog_uri"]         = "#{spec.homepage}/blob/v#{spec.version}/CHANGES.md"
+  spec.metadata["rubygems_mfa_required"] = "true"
 
-  # XXX: `jruby` container images lacks of `git` and we don't need `sec.files`
-  #   to run rspec suite.
+  # XXX: `jruby` container images lacks of `git` and we don't need `spec.files` to run rspec suite.
   spec.files =
     if ENV["CI"]
       []
@@ -34,8 +34,9 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = "~> 2.6"
+  spec.required_ruby_version = ">= 2.6"
 
+  spec.add_runtime_dependency "concurrent-ruby", ">= 1.1.9"
   spec.add_runtime_dependency "redis", "~> 4.0"
 
   spec.add_development_dependency "bundler"
