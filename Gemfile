@@ -19,7 +19,7 @@ end
 
 group :test do
   gem "connection_pool"
-  gem "redis-namespace"
+  gem "redis-namespace", ">= 1.8"
   gem "rspec"
   gem "rubocop"
   gem "rubocop-performance"

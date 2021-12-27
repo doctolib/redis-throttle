@@ -30,14 +30,11 @@ rspec:
   extends:   .test
   services:  [ "${redis}" ]
   variables: { REDIS_URL: "redis://redis:6379" }
-  script:
-    - bundle exec appraisal install --jobs $(nproc)
-    - bundle exec appraisal rspec
+  script:    scripts/ci-rspec
   parallel:
     matrix:
-      - redis:           [ "redis:4", "redis:5", "redis:6" ]
-        ruby:            [ "ruby:2.6", "ruby:2.7", "ruby:3.0", "ruby:3.1" ]
-        REDIS_NAMESPACE: [ "", "xxx" ]
+      - redis: [ "redis:4", "redis:5", "redis:6" ]
+        ruby:  [ "ruby:2.6", "ruby:2.7", "ruby:3.0", "ruby:3.1" ]
 
 # YARD #########################################################################
 
