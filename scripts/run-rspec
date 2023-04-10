@@ -13,3 +13,9 @@ for BUNDLE_GEMFILE in gemfiles/redis_namespace_*.gemfile; do
   bundle check || bundle install
   env REDIS_GEM="redis-namespace" bundle exec rspec
 done
+
+for BUNDLE_GEMFILE in gemfiles/redis_client_*.gemfile; do
+  export BUNDLE_GEMFILE
+  bundle check || bundle install
+  env REDIS_GEM="redis-client" bundle exec rspec
+done

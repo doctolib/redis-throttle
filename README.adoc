@@ -23,16 +23,16 @@ Or install it yourself as:
 # Allow 1 concurrent calls. If call takes more than 10 seconds, consider it
 # gone (as if process died, or by any other reason did not called `#release`):
 concurrency = RedisThrottle.concurrency(:bucket_name,
-  :limit => 1,
+  limit: 1,
   :ttl   => 10
 )
 
-concurrency.acquire(:token => "abc") # => "abc"
-concurrency.acquire(:token => "xyz") # => nil
+concurrency.acquire(redis, token: "abc") # => "abc"
+concurrency.acquire(redis, token: "xyz") # => nil
 
-concurrency.release(:token => "abc")
+concurrency.release(redis, token: "abc")
 
-concurrency.acquire(:token => "xyz") # => "xyz"
+concurrency.acquire(redis, token: "xyz") # => "xyz"
 ----
 
 === Rate Limit
@@ -42,15 +42,15 @@ concurrency.acquire(:token => "xyz") # => "xyz"
 # Allow 1 calls per 10 seconds:
 rate_limit = RedisThrottle.rate_limit(:bucket_name,
   :limit  => 1,
-  :period => 10
+  period: 10
 )
 
-rate_limit.acquire # => "6a6c6546-268d-4216-bcf3-3139b8e11609"
-rate_limit.acquire # => nil
+rate_limit.acquire(redis) # => "6a6c6546-268d-4216-bcf3-3139b8e11609"
+rate_limit.acquire(redis) # => nil
 
 sleep 10
 
-rate_limit.acquire # => "e2926a90-2cf4-4bff-9401-65f3a70d32bd"
+rate_limit.acquire(redis) # => "e2926a90-2cf4-4bff-9401-65f3a70d32bd"
 ----
 
 
@@ -59,11 +59,11 @@ rate_limit.acquire # => "e2926a90-2cf4-4bff-9401-65f3a70d32bd"
 [source,ruby]
 ----
 throttle = RedisThrottle
-  .concurrency(:db, :limit => 3, :ttl => 900)
-  .rate_limit(:api_minutely, :limit => 1, :period => 60)
-  .rate_limit(:api_hourly, :limit => 10, :period => 3600)
+  .concurrency(:db, limit: 3, ttl: 900)
+  .rate_limit(:api_minutely, limit: 1, period: 60)
+  .rate_limit(:api_hourly, limit: 10, period: 3600)
 
-throttle.call(:token => "abc") do
+throttle.call(redis, token: "abc") do
   # do something if all strategies are resolved
 end
 ----
@@ -72,43 +72,14 @@ You can also compose multiple throttlers together:
 
 [source,ruby]
 ----
-db_limiter  = RedisThrottle.concurrency(:db, :limit => 3, :ttl => 900)
+db_limiter  = RedisThrottle.concurrency(:db, limit: 3, ttl: 900)
 api_limiter = RedisThrottle
-  .rate_limit(:api_minutely, :limit => 1, :period => 60)
-  .rate_limit(:api_hourly, :limit => 10, :period => 3600)
+  .rate_limit(:api_minutely, limit: 1, period: 60)
+  .rate_limit(:api_hourly, limit: 10, period: 3600)
 
-(db_limiter + api_limiter).call do
+(db_limiter + api_limiter).call(redis) do
   # ...
 end
-----
-
-
-=== With ConnectionPool
-
-If you're using [connection_pool](https://github.com/mperham/connection_pool),
-you can pass its `#with` method as connection builder:
-
-[source,ruby]
-----
-pool     = ConnectionPool.new { Redis.new }
-throttle = RedisThrottle.new(:redis => pool.method(:with))
-----
-
-=== With Sidekiq
-
-[Sidekiq](https://github.com/mperham/sidekiq): uses ConnectionPool, so you can
-use the same approach:
-
-[source,ruby]
-----
-throttle = RedisThrottle.new(:redis => Sidekiq.redis_pool.method(:with))
-----
-
-Or, you can use its `.redis` method directly:
-
-[source,ruby]
-----
-throttle = RedisThrottle.new(:redis => Sidekiq.method(:redis))
 ----
 
 
@@ -132,8 +103,15 @@ This library aims to support and is tested against:
 ** 4.4.x
 ** 4.5.x
 ** 4.6.x
+** 4.7.x
+** 4.8.x
+** 5.0.x
 * https://github.com/resque/redis-namespace[redis-namespace]
 ** 1.10.x
+* https://github.com/redis-rb/redis-client[redis-client]
+** 0.12.x
+** 0.13.x
+** 0.14.x
 
 If something doesn't work on one of these versions, it's a bug.
 
@@ -148,7 +126,8 @@ patches in a timely fashion. If critical issues for a particular implementation
 exist at the time of a major release, support for that Ruby version may be
 dropped.
 
-The same applies to *Redis Server*, *redis-rb*, and *redis-namespace* support.
+The same applies to *Redis Server*, *redis-rb*, *redis-namespace*,
+and *redis-client* support.
 
 
 == Development

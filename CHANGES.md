@@ -7,12 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for redis-client.
+
+### Changed
+
+- (BREAKING) RedisThrottle.new now does not accept `redis` client, instead it's
+  now required to pass it to `#call`, `#acquire`, `#release`, `#reset`, `#info`,
+  and `.info`.
+
 ### Removed
 
 - (BREAKING) Removed `redis/throttle.rb` and `Redis::Throttle` class.
   Use `redis_throttle.rb` and `RedisThrottle` instead.
-
 - (BREAKING) Removed `RedisThrottle#|` alias of `#merge`.
+- (BREAKING) Removed `RedisThrottle#<<` alias of `#merge!`.
+- (BREAKING) Removed support of ConnectionPool - pass unpooled redis client
+  instead.
 
 
 ## [1.1.0] - 2023-04-10

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require "redis"
-require "redis-prescription"
+require "redis_prescription"
 
 require_relative "./concurrency"
 require_relative "./rate_limit"
@@ -26,14 +25,9 @@ class RedisThrottle
     SCRIPT = RedisPrescription.new(File.read("#{__dir__}/api.lua"))
     private_constant :SCRIPT
 
-    # @param redis [Redis, Redis::Namespace, #to_proc]
-    def initialize(redis: nil)
-      @redis =
-        if redis.respond_to?(:to_proc)
-          redis.to_proc
-        else
-          ->(&b) { b.call(redis || Redis.current) }
-        end
+    # @param redis [Redis, Redis::Namespace, RedisClient, RedisClient::Decorator::Client]
+    def initialize(redis)
+      @redis = redis
     end
 
     # @param strategies [Enumerable<Concurrency, RateLimit>]
@@ -60,12 +54,12 @@ class RedisThrottle
     # @return [Array<Concurrency, RateLimit>]
     def strategies(match:)
       results = []
+      block   = ->(key) { from_key(key)&.then { |strategy| results << strategy } }
 
-      @redis.call do |redis|
-        redis.scan_each(match: "#{NAMESPACE}:*:#{match}:*:*") do |key|
-          strategy = from_key(key)
-          results << strategy if strategy
-        end
+      if redis_client?
+        @redis.scan("MATCH", "#{NAMESPACE}:*:#{match}:*:*", &block)
+      else
+        @redis.scan_each(match: "#{NAMESPACE}:*:#{match}:*:*", &block)
       end
 
       results
@@ -77,16 +71,17 @@ class RedisThrottle
       strategies.zip(execute(:INFO, to_params(strategies) << :TS << Time.now.to_i)).to_h
     end
 
-    # @note Used for specs only.
-    # @return [void]
-    def ping
-      @redis.call(&:ping)
-    end
-
     private
 
+    def redis_client?
+      return true if defined?(::RedisClient) && @redis.is_a?(::RedisClient)
+      return true if defined?(::RedisClient::Decorator::Client) && @redis.is_a?(::RedisClient::Decorator::Client)
+
+      false
+    end
+
     def execute(command, argv)
-      @redis.call { |redis| SCRIPT.call(redis, keys: [NAMESPACE], argv: [command, *argv]) }
+      SCRIPT.call(@redis, keys: [NAMESPACE], argv: [command, *argv])
     end
 
     def from_key(key)
