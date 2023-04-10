@@ -142,9 +142,6 @@ class RedisThrottle
 
   alias + merge
 
-  # @deprecated will be removed in 2.0.0
-  alias | merge
-
   # Prevents further modifications to the throttle instance.
   #
   # @see https://docs.ruby-lang.org/en/master/Object.html#method-i-freeze

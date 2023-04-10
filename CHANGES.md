@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- (BREAKING) Removed `redis/throttle.rb` and `Redis::Throttle` class.
+  Use `redis_throttle.rb` and `RedisThrottle` instead.
+
+- (BREAKING) Removed `RedisThrottle#|` alias of `#merge`.
+
+
 ## [1.1.0] - 2023-04-10
 
 ### Added
