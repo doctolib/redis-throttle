@@ -1,9 +1,0 @@
-#!/bin/sh
-
-rm -f ./Gemfile.lock
-bundle update
-
-rm -rf ./gemfiles/*
-bundle exec appraisal update
-
-bundle exec appraisal rspec

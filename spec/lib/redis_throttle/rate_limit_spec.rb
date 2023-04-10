@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
-require "redis/throttle/concurrency"
-require "redis/throttle/rate_limit"
-
-RSpec.describe Redis::Throttle::RateLimit do
-  subject(:rate_limit) { described_class.new(:acab, :limit => 13, :period => 12) }
+RSpec.describe RedisThrottle::RateLimit do
+  subject(:rate_limit) { described_class.new(:acab, limit: 13, period: 12) }
 
   it { is_expected.to respond_to :bucket }
   it { is_expected.to respond_to :limit }
@@ -13,7 +10,7 @@ RSpec.describe Redis::Throttle::RateLimit do
   describe "#==" do
     subject { rate_limit == other }
 
-    let(:other)  { described_class.new(bucket, :limit => limit, :period => period) }
+    let(:other)  { described_class.new(bucket, limit: limit, period: period) }
     let(:bucket) { rate_limit.bucket }
     let(:limit)  { rate_limit.limit }
     let(:period) { rate_limit.period }
@@ -48,7 +45,7 @@ RSpec.describe Redis::Throttle::RateLimit do
   describe "#<=>" do
     subject { rate_limit <=> other }
 
-    let(:other)  { described_class.new(bucket, :limit => limit, :period => period) }
+    let(:other)  { described_class.new(bucket, limit: limit, period: period) }
     let(:bucket) { rate_limit.bucket }
     let(:limit)  { rate_limit.limit }
     let(:period) { rate_limit.period }
@@ -80,7 +77,7 @@ RSpec.describe Redis::Throttle::RateLimit do
     end
 
     context "when other is an instance of Concurrency" do
-      let(:other) { Redis::Throttle::Concurrency.new(bucket, :limit => limit, :ttl => 123) }
+      let(:other) { RedisThrottle::Concurrency.new(bucket, limit: limit, ttl: 123) }
 
       it { is_expected.to eq(-1) }
     end
@@ -95,7 +92,7 @@ RSpec.describe Redis::Throttle::RateLimit do
   describe "#hash" do
     subject { rate_limit.hash }
 
-    let(:other)  { described_class.new(bucket, :limit => limit, :period => period) }
+    let(:other)  { described_class.new(bucket, limit: limit, period: period) }
     let(:bucket) { rate_limit.bucket }
     let(:limit)  { rate_limit.limit }
     let(:period) { rate_limit.period }

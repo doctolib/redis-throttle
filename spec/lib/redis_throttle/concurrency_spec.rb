@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
-require "redis/throttle/concurrency"
-require "redis/throttle/rate_limit"
-
-RSpec.describe Redis::Throttle::Concurrency do
-  subject(:concurrency) { described_class.new(:acab, :limit => 13, :ttl => 12) }
+RSpec.describe RedisThrottle::Concurrency do
+  subject(:concurrency) { described_class.new(:acab, limit: 13, ttl: 12) }
 
   it { is_expected.to respond_to :bucket }
   it { is_expected.to respond_to :limit }
@@ -13,7 +10,7 @@ RSpec.describe Redis::Throttle::Concurrency do
   describe "#==" do
     subject { concurrency == other }
 
-    let(:other)  { described_class.new(bucket, :limit => limit, :ttl => ttl) }
+    let(:other)  { described_class.new(bucket, limit: limit, ttl: ttl) }
     let(:bucket) { concurrency.bucket }
     let(:limit)  { concurrency.limit }
     let(:ttl)    { concurrency.ttl }
@@ -48,7 +45,7 @@ RSpec.describe Redis::Throttle::Concurrency do
   describe "#<=>" do
     subject { concurrency <=> other }
 
-    let(:other)  { described_class.new(bucket, :limit => limit, :ttl => ttl) }
+    let(:other)  { described_class.new(bucket, limit: limit, ttl: ttl) }
     let(:bucket) { concurrency.bucket }
     let(:limit)  { concurrency.limit }
     let(:ttl)    { concurrency.ttl }
@@ -80,7 +77,7 @@ RSpec.describe Redis::Throttle::Concurrency do
     end
 
     context "when other is an instance of RateLimit" do
-      let(:other) { Redis::Throttle::RateLimit.new(bucket, :limit => limit, :period => 123) }
+      let(:other) { RedisThrottle::RateLimit.new(bucket, limit: limit, period: 123) }
 
       it { is_expected.to eq 1 }
     end
@@ -95,7 +92,7 @@ RSpec.describe Redis::Throttle::Concurrency do
   describe "#hash" do
     subject { concurrency.hash }
 
-    let(:other)  { described_class.new(bucket, :limit => limit, :ttl => ttl) }
+    let(:other)  { described_class.new(bucket, limit: limit, ttl: ttl) }
     let(:bucket) { concurrency.bucket }
     let(:limit)  { concurrency.limit }
     let(:ttl)    { concurrency.ttl }

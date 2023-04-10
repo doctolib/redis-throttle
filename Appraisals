@@ -1,7 +1,17 @@
 # frozen_string_literal: true
 
-%w[4.2 4.3 4.4].each do |redis_gem_version|
-  appraise "redis-#{redis_gem_version}.x" do
-    gem "redis", "~> #{redis_gem_version}.0"
+%w[4.1 4.2 4.3 4.4 4.5 4.6].each do |version|
+  appraise "redis-rb-#{version}.x" do
+    group :test do
+      gem "redis", "~> #{version}.0"
+    end
+  end
+end
+
+%w[1.10].each do |version|
+  appraise "redis-namespace-#{version}.x" do
+    group :test do
+      gem "redis-namespace", "~> #{version}.0"
+    end
   end
 end

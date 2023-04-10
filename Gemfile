@@ -2,36 +2,32 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in redis-throttle.gemspec
-gemspec
-
 gem "appraisal"
-
-gem "rake", "~> 12.0"
-
-group :development do
-  gem "benchmark-ips"
-  gem "guard"
-  gem "guard-rspec"
-  gem "guard-rubocop"
-  gem "pry"
-end
+gem "rake"
 
 group :test do
   gem "connection_pool"
-  gem "redis-namespace", ">= 1.8"
+  gem "redis", "< 4.7.0"
+
   gem "rspec"
-  gem "rubocop"
-  gem "rubocop-performance"
-  gem "rubocop-rake"
-  gem "rubocop-rspec"
   gem "simplecov"
-  gem "terminal-table"
   gem "timecop"
+
+  gem "rubocop",              require: false
+  gem "rubocop-performance",  require: false
+  gem "rubocop-rake",         require: false
+  gem "rubocop-rspec",        require: false
 end
 
-group :doc do
-  gem "commonmarker"
-  gem "rouge"
+group :development, optional: true do
+  gem "debug"
+  gem "guard"
+  gem "guard-rspec"
+end
+
+group :doc, optional: true do
+  gem "asciidoctor"
   gem "yard"
 end
+
+gemspec

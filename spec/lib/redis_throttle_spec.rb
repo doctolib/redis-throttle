@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
 require "support/timecop"
-require "redis/throttle"
 
-RSpec.describe Redis::Throttle do
+RSpec.describe RedisThrottle do
   subject(:throttle) { described_class.new }
 
   before { stub_const("FrozenError", described_class::FrozenError) } if RUBY_VERSION < "2.5"
@@ -13,9 +12,9 @@ RSpec.describe Redis::Throttle do
       allow(described_class::Api).to receive(:new).and_call_original
 
       redis = Redis.new
-      described_class.new(:redis => redis)
+      described_class.new(redis: redis)
 
-      expect(described_class::Api).to have_received(:new).with(:redis => redis)
+      expect(described_class::Api).to have_received(:new).with(redis: redis)
     end
   end
 
@@ -24,14 +23,14 @@ RSpec.describe Redis::Throttle do
       redis    = instance_double(Redis)
       throttle = instance_double(described_class)
 
-      allow(described_class).to receive(:new).with(:redis => redis).and_return(throttle)
-      allow(throttle).to receive(:concurrency).with(:example, :limit => 1, :ttl => 60)
+      allow(described_class).to receive(:new).with(redis: redis).and_return(throttle)
+      allow(throttle).to receive(:concurrency).with(:example, limit: 1, ttl: 60)
 
-      described_class.concurrency(:example, :redis => redis, :limit => 1, :ttl => 60)
+      described_class.concurrency(:example, redis: redis, limit: 1, ttl: 60)
 
       aggregate_failures do
-        expect(described_class).to have_received(:new).with(:redis => redis)
-        expect(throttle).to have_received(:concurrency).with(:example, :limit => 1, :ttl => 60)
+        expect(described_class).to have_received(:new).with(redis: redis)
+        expect(throttle).to have_received(:concurrency).with(:example, limit: 1, ttl: 60)
       end
     end
   end
@@ -41,14 +40,14 @@ RSpec.describe Redis::Throttle do
       redis    = instance_double(Redis)
       throttle = instance_double(described_class)
 
-      allow(described_class).to receive(:new).with(:redis => redis).and_return(throttle)
-      allow(throttle).to receive(:rate_limit).with(:example, :limit => 1, :period => 60)
+      allow(described_class).to receive(:new).with(redis: redis).and_return(throttle)
+      allow(throttle).to receive(:rate_limit).with(:example, limit: 1, period: 60)
 
-      described_class.rate_limit(:example, :redis => redis, :limit => 1, :period => 60)
+      described_class.rate_limit(:example, redis: redis, limit: 1, period: 60)
 
       aggregate_failures do
-        expect(described_class).to have_received(:new).with(:redis => redis)
-        expect(throttle).to have_received(:rate_limit).with(:example, :limit => 1, :period => 60)
+        expect(described_class).to have_received(:new).with(redis: redis)
+        expect(throttle).to have_received(:rate_limit).with(:example, limit: 1, period: 60)
       end
     end
   end
@@ -57,8 +56,8 @@ RSpec.describe Redis::Throttle do
     before do
       throttle =
         described_class
-          .concurrency(:abc, :limit => 3, :ttl => 60)
-          .rate_limit(:xyz, :limit => 3, :period => 60)
+          .concurrency(:abc, limit: 3, ttl: 60)
+          .rate_limit(:xyz, limit: 3, period: 60)
 
       3.times do
         Timecop.travel(10)
@@ -68,14 +67,14 @@ RSpec.describe Redis::Throttle do
 
     it "returns usage info for all strategies in use" do
       expect(described_class.info).to eq({
-        described_class::Concurrency.new(:abc, :limit => 3, :ttl => 60)  => 3,
-        described_class::RateLimit.new(:xyz, :limit => 3, :period => 60) => 3
+        described_class::Concurrency.new(:abc, limit: 3, ttl: 60)  => 3,
+        described_class::RateLimit.new(:xyz, limit: 3, period: 60) => 3
       })
     end
 
     it "supports filtering" do
-      expect(described_class.info(:match => "a*")).to eq({
-        described_class::Concurrency.new(:abc, :limit => 3, :ttl => 60) => 3
+      expect(described_class.info(match: "a*")).to eq({
+        described_class::Concurrency.new(:abc, limit: 3, ttl: 60) => 3
       })
     end
 
@@ -83,8 +82,8 @@ RSpec.describe Redis::Throttle do
       Timecop.travel(60)
 
       expect(described_class.info).to eq({
-        described_class::Concurrency.new(:abc, :limit => 3, :ttl => 60)  => 1,
-        described_class::RateLimit.new(:xyz, :limit => 3, :period => 60) => 1
+        described_class::Concurrency.new(:abc, limit: 3, ttl: 60)  => 1,
+        described_class::RateLimit.new(:xyz, limit: 3, period: 60) => 1
       })
     end
   end
@@ -116,7 +115,7 @@ RSpec.describe Redis::Throttle do
   end
 
   describe "#concurrency" do
-    subject(:concurrency) { throttle.concurrency(:example, :limit => 1, :ttl => 60) }
+    subject(:concurrency) { throttle.concurrency(:example, limit: 1, ttl: 60) }
 
     it "returns Redis::Throttle instance itself" do
       expect(concurrency).to be throttle
@@ -125,7 +124,7 @@ RSpec.describe Redis::Throttle do
     it "fails with FrozenError when throttle is frozen" do
       throttle.freeze
 
-      expect { concurrency }.to raise_error(FrozenError, "can't modify frozen Redis::Throttle")
+      expect { concurrency }.to raise_error(FrozenError, "can't modify frozen #{described_class}")
     end
 
     it "allows max LIMIT concurrent units" do
@@ -137,14 +136,14 @@ RSpec.describe Redis::Throttle do
 
     it "allows re-acquire execution lock for the same token" do
       aggregate_failures do
-        expect(concurrency.acquire(:token => "xxx")).to be_truthy
-        expect(concurrency.acquire(:token => "xxx")).to be_truthy
+        expect(concurrency.acquire(token: "xxx")).to be_truthy
+        expect(concurrency.acquire(token: "xxx")).to be_truthy
       end
     end
   end
 
   describe "#rate_limit" do
-    subject(:rate_limit) { throttle.rate_limit(:example, :limit => 2, :period => 60) }
+    subject(:rate_limit) { throttle.rate_limit(:example, limit: 2, period: 60) }
 
     it "returns Redis::Throttle instance itself" do
       expect(rate_limit).to be throttle
@@ -153,7 +152,7 @@ RSpec.describe Redis::Throttle do
     it "fails with FrozenError when throttle is frozen" do
       throttle.freeze
 
-      expect { rate_limit }.to raise_error(FrozenError, "can't modify frozen Redis::Throttle")
+      expect { rate_limit }.to raise_error(FrozenError, "can't modify frozen #{described_class}")
     end
 
     it "allows max LIMIT units per PERIOD", :frozen_time do
@@ -173,22 +172,22 @@ RSpec.describe Redis::Throttle do
 
     it "disallows re-acquire execution lock for the same token" do
       aggregate_failures do
-        expect(rate_limit.acquire(:token => "xxx")).to be_truthy
-        expect(rate_limit.acquire(:token => "xxx")).to be_truthy
-        expect(rate_limit.acquire(:token => "xxx")).to be_falsey
+        expect(rate_limit.acquire(token: "xxx")).to be_truthy
+        expect(rate_limit.acquire(token: "xxx")).to be_truthy
+        expect(rate_limit.acquire(token: "xxx")).to be_falsey
       end
     end
   end
 
   describe "#merge!" do
-    let(:throttle) { described_class.concurrency(:abc, :limit => 1, :ttl => 60) }
-    let(:other)    { described_class.concurrency(:xyz, :limit => 1, :ttl => 60) }
+    let(:throttle) { described_class.concurrency(:abc, limit: 1, ttl: 60) }
+    let(:other)    { described_class.concurrency(:xyz, limit: 1, ttl: 60) }
 
     it "merges other throttle strategies in" do
       expect(throttle.merge!(other)).to eq(
         described_class
-          .concurrency(:abc, :limit => 1, :ttl => 60)
-          .concurrency(:xyz, :limit => 1, :ttl => 60)
+          .concurrency(:abc, limit: 1, ttl: 60)
+          .concurrency(:xyz, limit: 1, ttl: 60)
       )
     end
 
@@ -200,7 +199,7 @@ RSpec.describe Redis::Throttle do
       throttle.freeze
 
       expect { throttle.merge! other }
-        .to raise_error(FrozenError, "can't modify frozen Redis::Throttle")
+        .to raise_error(FrozenError, "can't modify frozen #{described_class}")
     end
   end
 
@@ -211,14 +210,14 @@ RSpec.describe Redis::Throttle do
   end
 
   describe "#merge" do
-    let(:throttle) { described_class.concurrency(:abc, :limit => 1, :ttl => 60) }
-    let(:other)    { described_class.concurrency(:xyz, :limit => 1, :ttl => 60) }
+    let(:throttle) { described_class.concurrency(:abc, limit: 1, ttl: 60) }
+    let(:other)    { described_class.concurrency(:xyz, limit: 1, ttl: 60) }
 
     it "merges strategies" do
       expect(throttle.merge(other)).to eq(
         described_class
-          .concurrency(:abc, :limit => 1, :ttl => 60)
-          .concurrency(:xyz, :limit => 1, :ttl => 60)
+          .concurrency(:abc, limit: 1, ttl: 60)
+          .concurrency(:xyz, limit: 1, ttl: 60)
       )
     end
 
@@ -256,9 +255,9 @@ RSpec.describe Redis::Throttle do
   describe "#==" do
     subject { throttle == other }
 
-    let(:a) { described_class.concurrency(:a, :limit => 1, :ttl => 60) }
-    let(:b) { described_class.concurrency(:b, :limit => 1, :ttl => 60) }
-    let(:c) { described_class.rate_limit(:c, :limit => 1, :period => 60) }
+    let(:a) { described_class.concurrency(:a, limit: 1, ttl: 60) }
+    let(:b) { described_class.concurrency(:b, limit: 1, ttl: 60) }
+    let(:c) { described_class.rate_limit(:c, limit: 1, period: 60) }
 
     context "when other has same strategies" do
       let(:throttle) { a | b | c }
@@ -284,9 +283,9 @@ RSpec.describe Redis::Throttle do
   describe "#call" do
     let(:throttle) { solo | minutely | hourly }
 
-    let(:solo)     { described_class.concurrency(:solo, :limit => 1, :ttl => 60) }
-    let(:minutely) { described_class.rate_limit(:minutely, :limit => 1, :period => 60) }
-    let(:hourly)   { described_class.rate_limit(:hourly, :limit => 1, :period => 3660) }
+    let(:solo)     { described_class.concurrency(:solo, limit: 1, ttl: 60) }
+    let(:minutely) { described_class.rate_limit(:minutely, limit: 1, period: 60) }
+    let(:hourly)   { described_class.rate_limit(:hourly, limit: 1, period: 3660) }
 
     it "yields control to the given block" do
       expect { |b| throttle.call(&b) }.to yield_control
@@ -315,7 +314,7 @@ RSpec.describe Redis::Throttle do
       before { hourly.acquire }
 
       it "rejects partially acquired locks" do
-        throttle.call(:token => "nay") { 42 }
+        throttle.call(token: "nay") { 42 }
 
         aggregate_failures do
           expect(solo.acquire).to be_truthy
@@ -332,12 +331,12 @@ RSpec.describe Redis::Throttle do
   describe "#acquire" do
     let(:throttle) { solo | minutely | hourly }
 
-    let(:solo)     { described_class.concurrency(:solo, :limit => 1, :ttl => 60) }
-    let(:minutely) { described_class.rate_limit(:minutely, :limit => 1, :period => 60) }
-    let(:hourly)   { described_class.rate_limit(:hourly, :limit => 1, :period => 3660) }
+    let(:solo)     { described_class.concurrency(:solo, limit: 1, ttl: 60) }
+    let(:minutely) { described_class.rate_limit(:minutely, limit: 1, period: 60) }
+    let(:hourly)   { described_class.rate_limit(:hourly, limit: 1, period: 3660) }
 
     it "returns token when all strategies were resolved" do
-      expect(throttle.acquire(:token => "aye")).to eq "aye"
+      expect(throttle.acquire(token: "aye")).to eq "aye"
     end
 
     it "generates token if no token given" do
@@ -366,19 +365,19 @@ RSpec.describe Redis::Throttle do
 
   describe "#release" do
     let(:throttle)    { concurrency | rate_limit }
-    let(:concurrency) { described_class.concurrency(:concurrency, :limit => 1, :ttl => 60) }
-    let(:rate_limit)  { described_class.rate_limit(:rate_limit, :limit => 1, :period => 60) }
+    let(:concurrency) { described_class.concurrency(:concurrency, limit: 1, ttl: 60) }
+    let(:rate_limit)  { described_class.rate_limit(:rate_limit, limit: 1, period: 60) }
 
     it "releases concurrency locks" do
-      throttle.acquire(:token => "xxx")
-      throttle.release(:token => "xxx")
+      throttle.acquire(token: "xxx")
+      throttle.release(token: "xxx")
 
       expect(concurrency.acquire).to be_truthy
     end
 
     it "keeps rate_limit locks" do
-      throttle.acquire(:token => "xxx")
-      throttle.release(:token => "xxx")
+      throttle.acquire(token: "xxx")
+      throttle.release(token: "xxx")
 
       expect(rate_limit.acquire).to be_falsey
     end
@@ -386,8 +385,8 @@ RSpec.describe Redis::Throttle do
 
   describe "#reset" do
     let(:throttle)    { concurrency | rate_limit }
-    let(:concurrency) { described_class.concurrency(:concurrency, :limit => 1, :ttl => 60) }
-    let(:rate_limit)  { described_class.rate_limit(:rate_limit, :limit => 1, :period => 60) }
+    let(:concurrency) { described_class.concurrency(:concurrency, limit: 1, ttl: 60) }
+    let(:rate_limit)  { described_class.rate_limit(:rate_limit, limit: 1, period: 60) }
 
     it "flushes buckets of all strategies" do
       throttle.acquire
@@ -402,15 +401,15 @@ RSpec.describe Redis::Throttle do
 
   describe "#info" do
     let(:throttle)    { concurrency | rate_limit }
-    let(:concurrency) { described_class.concurrency(:abc, :limit => 3, :ttl => 60) }
-    let(:rate_limit)  { described_class.rate_limit(:xyz, :limit => 3, :period => 60) }
+    let(:concurrency) { described_class.concurrency(:abc, limit: 3, ttl: 60) }
+    let(:rate_limit)  { described_class.rate_limit(:xyz, limit: 3, period: 60) }
 
     it "returns usage info for all strategies of the throttle" do
       concurrency.acquire
 
       expect(throttle.info).to eq({
-        described_class::Concurrency.new(:abc, :limit => 3, :ttl => 60)  => 1,
-        described_class::RateLimit.new(:xyz, :limit => 3, :period => 60) => 0
+        described_class::Concurrency.new(:abc, limit: 3, ttl: 60)  => 1,
+        described_class::RateLimit.new(:xyz, limit: 3, period: 60) => 0
       })
     end
 
@@ -423,8 +422,8 @@ RSpec.describe Redis::Throttle do
       Timecop.travel(60)
 
       expect(throttle.info).to eq({
-        described_class::Concurrency.new(:abc, :limit => 3, :ttl => 60)  => 1,
-        described_class::RateLimit.new(:xyz, :limit => 3, :period => 60) => 1
+        described_class::Concurrency.new(:abc, limit: 3, ttl: 60)  => 1,
+        described_class::RateLimit.new(:xyz, limit: 3, period: 60) => 1
       })
     end
   end

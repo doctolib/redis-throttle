@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative "./lib/redis/throttle/version"
+require_relative "./lib/redis_throttle/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "redis-throttle"
-  spec.version       = Redis::Throttle::VERSION
+  spec.version       = RedisThrottle::VERSION
   spec.authors       = ["Alexey Zapparov"]
   spec.email         = ["alexey@zapparov.com"]
 
-  spec.summary       = "Redis based rate limit and concurrency throttling."
+  spec.summary       = "Redis based rate limit and concurrency throttling"
   spec.homepage      = "https://gitlab.com/ixti/redis-throttle"
   spec.license       = "MIT"
 
@@ -18,26 +18,20 @@ Gem::Specification.new do |spec|
   spec.metadata["changelog_uri"]         = "#{spec.homepage}/blob/v#{spec.version}/CHANGES.md"
   spec.metadata["rubygems_mfa_required"] = "true"
 
-  # XXX: `jruby` container images lacks of `git` and we don't need `spec.files` to run rspec suite.
-  spec.files =
-    if ENV["CI"]
-      []
-    else
-      Dir.chdir(__dir__) do
-        `git ls-files -z`.split("\x0").select do |f|
-          "LICENSE.txt" == f || f.start_with?("lib/")
-        end
-      end
+  spec.files = Dir.chdir(__dir__) do
+    docs = %w[LICENSE.txt README.adoc].freeze
+
+    `git ls-files -z`.split("\x0").select do |f|
+      f.start_with?("lib") || docs.include?(f)
     end
+  end
 
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = ">= 2.6"
+  spec.required_ruby_version = ">= 2.7"
 
-  spec.add_runtime_dependency "concurrent-ruby", ">= 1.1.9"
-  spec.add_runtime_dependency "redis", "~> 4.0"
-
-  spec.add_development_dependency "bundler"
+  spec.add_runtime_dependency "concurrent-ruby", ">= 1.2.0"
+  spec.add_runtime_dependency "redis-prescription", ">= 2.2.0"
 end
