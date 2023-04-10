@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2023-04-11
+
 ### Added
 
 - Add support for redis-client.
@@ -57,7 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and threshold strategies from [sidekiq-throttled](https://github.com/ixti/sidekiq-throttled).
 
 
-[unreleased]: https://gitlab.com/ixti/redis-throttle/-/compare/v1.1.0...main
+[unreleased]: https://gitlab.com/ixti/redis-throttle/-/compare/v2.0.0...main
+[2.0.0]: https://gitlab.com/ixti/redis-throttle/-/compare/v1.1.0...v2.0.0
 [1.1.0]: https://gitlab.com/ixti/redis-throttle/-/compare/v1.0.0...v1.1.0
 [1.0.0]: https://gitlab.com/ixti/redis-throttle/-/compare/v0.0.1...v1.0.0
 [0.0.1]: https://gitlab.com/ixti/redis-throttle/-/commit/b5647214f5202a52e457adb354d26d3ab8fe7c50
