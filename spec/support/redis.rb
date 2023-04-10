@@ -1,32 +1,31 @@
 # frozen_string_literal: true
 
-require "redis"
-require "terminal-table"
+REDIS_URL = ENV.fetch("REDIS_URL", "redis://localhost:6379")
+REDIS_GEM = ENV.fetch("REDIS_GEM", "redis")
 
-REDIS_NAMESPACE = ENV["REDIS_NAMESPACE"].to_s.strip
-REDIS =
-  if REDIS_NAMESPACE.empty?
-    Redis.new
-  else
-    require "redis-namespace"
+case REDIS_GEM
+when "redis"
+  require "redis"
 
-    Redis::Namespace.new(REDIS_NAMESPACE, :redis => Redis.new)
+  REDIS = Redis.new(url: REDIS_URL)
+
+  RSpec.configure do |config|
+    config.before do
+      REDIS.script("FLUSH")
+      REDIS.flushdb
+    end
   end
+when "redis-namespace"
+  require "redis/namespace"
 
-RSpec.configure do |config|
-  config.before :suite do
-    options = %i[host port db].map { |k| [k, REDIS._client.options[k]] }
+  REDIS = Redis::Namespace.new("redis-prescription", redis: Redis.new(url: REDIS_URL))
 
-    options << [:namespace, REDIS.namespace] if REDIS.respond_to?(:namespace)
-    options << ["server version", REDIS.info["redis_version"]]
-    options << ["client version", Redis::VERSION]
-
-    puts Terminal::Table.new({ :title => "REDIS", :rows => options })
+  RSpec.configure do |config|
+    config.before do
+      REDIS.redis.script("FLUSH")
+      REDIS.redis.flushdb
+    end
   end
-
-  config.before do
-    (REDIS.respond_to?(:namespace) ? REDIS.redis : REDIS).flushdb
-
-    Redis.current = REDIS
-  end
+else
+  raise "Invalid REDIS_GEM"
 end

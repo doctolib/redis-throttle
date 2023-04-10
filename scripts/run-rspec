@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -Eeuxo pipefail
+
+for BUNDLE_GEMFILE in gemfiles/redis_rb_*.gemfile; do
+  export BUNDLE_GEMFILE
+  bundle check || bundle install
+  env REDIS_GEM="redis" bundle exec rspec
+done
+
+for BUNDLE_GEMFILE in gemfiles/redis_namespace_*.gemfile; do
+  export BUNDLE_GEMFILE
+  bundle check || bundle install
+  env REDIS_GEM="redis-namespace" bundle exec rspec
+done

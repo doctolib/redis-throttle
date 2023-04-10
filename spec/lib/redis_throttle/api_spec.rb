@@ -1,37 +1,35 @@
 # frozen_string_literal: true
 
-require "redis/throttle/api"
-
-RSpec.describe Redis::Throttle::Api do
+RSpec.describe RedisThrottle::Api do
   describe ".new" do
     it "works with :redis given as #to_proc" do
       require "connection_pool"
 
-      redis           = instance_double(Redis)
+      redis           = Redis.new
       connection_pool = ConnectionPool.new { redis }
 
       allow(redis).to receive(:ping)
 
-      described_class.new(:redis => connection_pool.method(:with)).ping
+      described_class.new(redis: connection_pool.method(:with)).ping
 
       expect(redis).to have_received(:ping)
     end
 
     it "works with explicitly given :redis client" do
-      redis = instance_double(Redis)
+      redis = Redis.new
 
       allow(redis).to receive(:ping)
 
-      described_class.new(:redis => redis).ping
+      described_class.new(redis: redis).ping
 
       expect(redis).to have_received(:ping)
     end
 
     it "uses up-to-date Redis.current if :redis was given as `nil`" do
-      Redis.current = double
+      Redis.current = nil
 
-      api   = described_class.new(:redis => nil)
-      redis = Redis.current = instance_double(Redis)
+      api   = described_class.new(redis: nil)
+      redis = Redis.current = Redis.new
 
       allow(redis).to receive(:ping)
 

@@ -1,13 +1,21 @@
-/.bundle/
-/.yardoc
-/_yardoc/
+/.bundle
+/tmp
 /Gemfile.lock
-/gemfiles/*.lock
-/gemfiles/.bundle
-/coverage/
-/doc/
-/pkg/
-/spec/reports/
-/tmp/
-/vendor/
-/tags
+
+# Built gems
+/pkg
+
+# rspec
+/coverage
+/spec/examples.txt
+
+# Appraisals
+/gemfiles
+
+# YARD
+/doc
+/_yardoc
+/.yardoc
+
+# autoenv
+/.autoenv.zsh

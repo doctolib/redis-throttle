@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "../lib/redis-throttle"
+
 require "support/simplecov"
 require "support/redis"
 
