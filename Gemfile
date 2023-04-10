@@ -6,8 +6,7 @@ gem "appraisal"
 gem "rake"
 
 group :test do
-  gem "connection_pool"
-  gem "redis", "< 4.7.0"
+  gem "redis"
 
   gem "rspec"
   gem "simplecov"
