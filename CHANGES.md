@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2023-04-10
+
+### Added
+
+- Support Ruby-3.x.
+
+### Changed
+
+- Rename `Redis::Throttle` to `RedisThrottle`.
+
+### Deprecated
+
+- Using `Redis::Throttle` is now deprecated and will print out warning.
+  To silence deprecation warnings set:
+  `Redis::Throttle.silence_deprecation_warning = true`
+
+
 ## [1.0.0] - 2020-09-14
 
 ### Changed
@@ -20,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and threshold strategies from [sidekiq-throttled](https://github.com/ixti/sidekiq-throttled).
 
 
-[unreleased]: https://gitlab.com/ixti/redis-throttle/-/compare/v1.0.0...main
+[unreleased]: https://gitlab.com/ixti/redis-throttle/-/compare/v1.1.0...main
+[1.1.0]: https://gitlab.com/ixti/redis-throttle/-/compare/v1.0.0...v1.1.0
 [1.0.0]: https://gitlab.com/ixti/redis-throttle/-/compare/v0.0.1...v1.0.0
 [0.0.1]: https://gitlab.com/ixti/redis-throttle/-/commit/b5647214f5202a52e457adb354d26d3ab8fe7c50
