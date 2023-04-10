@@ -6,6 +6,7 @@ gem "appraisal"
 gem "rake"
 
 group :test do
+  gem "connection_pool"
   gem "redis"
 
   gem "rspec"

@@ -236,12 +236,6 @@ RSpec.describe RedisThrottle do
     end
   end
 
-  describe "#|" do
-    it "is an alias of #merge" do
-      expect(throttle.method(:|).original_name).to eq :merge
-    end
-  end
-
   describe "#freeze" do
     it "returns self" do
       expect(throttle.freeze).to be throttle
@@ -260,15 +254,15 @@ RSpec.describe RedisThrottle do
     let(:c) { described_class.rate_limit(:c, limit: 1, period: 60) }
 
     context "when other has same strategies" do
-      let(:throttle) { a | b | c }
-      let(:other)    { c | a | b }
+      let(:throttle) { a + b + c }
+      let(:other)    { c + a + b }
 
       it { is_expected.to be true }
     end
 
     context "when other has different strategies" do
-      let(:throttle) { a | c }
-      let(:other)    { a | b }
+      let(:throttle) { a + c }
+      let(:other)    { a + b }
 
       it { is_expected.to be false }
     end
@@ -281,7 +275,7 @@ RSpec.describe RedisThrottle do
   end
 
   describe "#call" do
-    let(:throttle) { solo | minutely | hourly }
+    let(:throttle) { solo + minutely + hourly }
 
     let(:solo)     { described_class.concurrency(:solo, limit: 1, ttl: 60) }
     let(:minutely) { described_class.rate_limit(:minutely, limit: 1, period: 60) }
@@ -329,7 +323,7 @@ RSpec.describe RedisThrottle do
   end
 
   describe "#acquire" do
-    let(:throttle) { solo | minutely | hourly }
+    let(:throttle) { solo + minutely + hourly }
 
     let(:solo)     { described_class.concurrency(:solo, limit: 1, ttl: 60) }
     let(:minutely) { described_class.rate_limit(:minutely, limit: 1, period: 60) }
@@ -364,7 +358,7 @@ RSpec.describe RedisThrottle do
   end
 
   describe "#release" do
-    let(:throttle)    { concurrency | rate_limit }
+    let(:throttle)    { concurrency + rate_limit }
     let(:concurrency) { described_class.concurrency(:concurrency, limit: 1, ttl: 60) }
     let(:rate_limit)  { described_class.rate_limit(:rate_limit, limit: 1, period: 60) }
 
@@ -384,7 +378,7 @@ RSpec.describe RedisThrottle do
   end
 
   describe "#reset" do
-    let(:throttle)    { concurrency | rate_limit }
+    let(:throttle)    { concurrency + rate_limit }
     let(:concurrency) { described_class.concurrency(:concurrency, limit: 1, ttl: 60) }
     let(:rate_limit)  { described_class.rate_limit(:rate_limit, limit: 1, period: 60) }
 
@@ -400,7 +394,7 @@ RSpec.describe RedisThrottle do
   end
 
   describe "#info" do
-    let(:throttle)    { concurrency | rate_limit }
+    let(:throttle)    { concurrency + rate_limit }
     let(:concurrency) { described_class.concurrency(:abc, limit: 3, ttl: 60) }
     let(:rate_limit)  { described_class.rate_limit(:xyz, limit: 3, period: 60) }
 
