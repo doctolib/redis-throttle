@@ -3,6 +3,8 @@
 require "simplecov"
 
 SimpleCov.start do
+  command_name "BUNDLE_GEMFILE=#{ENV.fetch('BUNDLE_GEMFILE')}"
+
   enable_coverage :branch
 
   add_filter "/gemfiles/"
