@@ -24,7 +24,7 @@ Or install it yourself as:
 # gone (as if process died, or by any other reason did not called `#release`):
 concurrency = RedisThrottle.concurrency(:bucket_name,
   limit: 1,
-  :ttl   => 10
+  ttl:   10
 )
 
 concurrency.acquire(redis, token: "abc") # => "abc"
@@ -41,7 +41,7 @@ concurrency.acquire(redis, token: "xyz") # => "xyz"
 ----
 # Allow 1 calls per 10 seconds:
 rate_limit = RedisThrottle.rate_limit(:bucket_name,
-  :limit  => 1,
+  limit:  1,
   period: 10
 )
 
