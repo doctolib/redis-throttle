@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2023-10-19
+
+### Fixed
+
+- Don't fail on release if given list of strategies has only rate-limits.
+  ([#24](https://gitlab.com/ixti/redis-throttle/-/issues/24))
+
 ## [2.0.0] - 2023-04-11
 
 ### Added
@@ -28,7 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (BREAKING) Removed support of ConnectionPool - pass unpooled redis client
   instead.
 
-
 ## [1.1.0] - 2023-04-10
 
 ### Added
@@ -45,21 +51,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   To silence deprecation warnings set:
   `Redis::Throttle.silence_deprecation_warning = true`
 
-
 ## [1.0.0] - 2020-09-14
 
 ### Changed
 
 - Refactor API and underlying Lua scripts to be more reliable.
 
-
 ## [0.0.1] - 2020-08-17
 
 - Initial release. Effectively this version represents extraction of concurrency
   and threshold strategies from [sidekiq-throttled](https://github.com/ixti/sidekiq-throttled).
 
-
-[unreleased]: https://gitlab.com/ixti/redis-throttle/-/compare/v2.0.0...main
+[unreleased]: https://gitlab.com/ixti/redis-throttle/-/compare/v2.0.1...main
+[2.0.1]: https://gitlab.com/ixti/redis-throttle/-/compare/v2.0.0...v2.0.1
 [2.0.0]: https://gitlab.com/ixti/redis-throttle/-/compare/v1.1.0...v2.0.0
 [1.1.0]: https://gitlab.com/ixti/redis-throttle/-/compare/v1.0.0...v1.1.0
 [1.0.0]: https://gitlab.com/ixti/redis-throttle/-/compare/v0.0.1...v1.0.0
