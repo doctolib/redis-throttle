@@ -41,7 +41,7 @@ class RedisThrottle
     # @param token [String]
     # @return [void]
     def release(strategies:, token:)
-      execute(:RELEASE, to_params(strategies.grep(Concurrency)) << :TOKEN << token)
+      execute(:RELEASE, to_params(strategies) << :TOKEN << token)
     end
 
     # @param strategies [Enumerable<Concurrency, RateLimit>]
@@ -96,18 +96,22 @@ class RedisThrottle
     end
 
     def to_params(strategies)
-      result = []
+      params = []
 
       strategies.each do |strategy|
         case strategy
         when Concurrency
-          result << "concurrency" << strategy.bucket << strategy.limit << strategy.ttl
+          params << "concurrency" << strategy.bucket << strategy.limit << strategy.ttl
         when RateLimit
-          result << "rate_limit" << strategy.bucket << strategy.limit << strategy.period
+          params << "rate_limit" << strategy.bucket << strategy.limit << strategy.period
+        else
+          raise TypeError, "invalid startegy: #{strategy.inspect}"
         end
       end
 
-      result
+      raise ArgumentError, "missing strategies" if params.empty?
+
+      params
     end
   end
 end
