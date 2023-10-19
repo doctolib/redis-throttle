@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added Redis 7.2 to the list of actively supported engine versions
+
+### Removed
+
+- Drop Ruby 2.7 support
+
 ## [2.0.1] - 2023-10-19
 
 ### Fixed
