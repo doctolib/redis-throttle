@@ -95,15 +95,15 @@ class RedisThrottle
       end
     end
 
-    def to_params(strategies)
+    def to_params(strategies) # rubocop:disable Metrics/MethodLength
       params = []
 
       strategies.each do |strategy|
         case strategy
         when Concurrency
-          params << "concurrency" << strategy.bucket << strategy.limit << strategy.ttl
+          params.push("concurrency", strategy.bucket, strategy.limit, strategy.ttl)
         when RateLimit
-          params << "rate_limit" << strategy.bucket << strategy.limit << strategy.period
+          params.push("rate_limit", strategy.bucket, strategy.limit, strategy.period)
         else
           raise TypeError, "invalid startegy: #{strategy.inspect}"
         end
