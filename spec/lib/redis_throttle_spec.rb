@@ -334,6 +334,18 @@ RSpec.describe RedisThrottle do
 
       expect(rate_limit.acquire(REDIS)).to be_falsey
     end
+
+    # See: https://gitlab.com/ixti/redis-throttle/-/issues/24
+    context "when throttle has rate limit only" do
+      let(:throttle) { rate_limit }
+
+      it "keeps rate_limit locks" do
+        throttle.acquire(REDIS, token: "xxx")
+        throttle.release(REDIS, token: "xxx")
+
+        expect(rate_limit.acquire(REDIS)).to be_falsey
+      end
+    end
   end
 
   describe "#reset" do
