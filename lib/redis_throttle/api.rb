@@ -19,7 +19,7 @@ class RedisThrottle
       (?<limit>\d+):
       (?<ttl_or_period>\d+)
     \z
-    }x.freeze
+    }x
     private_constant :KEYS_PATTERN
 
     SCRIPT = RedisPrescription.new(File.read("#{__dir__}/api.lua"))
