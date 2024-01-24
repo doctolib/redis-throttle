@@ -126,7 +126,7 @@ local function parse_params (parts)
       end
 
       if bucket and 0 < limit and 0 < ttl_or_period then
-        strategy.key = table.concat({ KEYS[1], name, bucket, limit, ttl_or_period }, ":")
+        strategy.key = table.concat({ KEYS[1], name, bucket }, ":")
         table.insert(strategies, strategy)
 
         pos = pos + 4
