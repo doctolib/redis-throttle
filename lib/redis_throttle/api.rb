@@ -15,9 +15,7 @@ class RedisThrottle
       \A
       #{NAMESPACE}:
       (?<strategy>concurrency|rate_limit):
-      (?<bucket>.+):
-      (?<limit>\d+):
-      (?<ttl_or_period>\d+)
+      (?<bucket>.+)
     \z
     }x
     private_constant :KEYS_PATTERN
@@ -63,12 +61,6 @@ class RedisThrottle
       end
 
       results
-    end
-
-    # @param strategies [Enumerable<Concurrency, RateLimit>]
-    # @return [Hash{Concurrency => Integer, RateLimit => Integer}]
-    def info(strategies:)
-      strategies.zip(execute(:INFO, to_params(strategies) << :TS << Time.now.to_i)).to_h
     end
 
     private
