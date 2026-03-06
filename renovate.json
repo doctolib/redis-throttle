@@ -1,0 +1,14 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "local>doctolib/renovate-config",
+    "local>doctolib/renovate-config:schedule-doctolib-weekly-on-sunday"
+  ],
+  "automerge": true,
+  "enabledManagers": [
+    "bundler"
+  ],
+  "lockFileMaintenance": {
+    "enabled": false
+  }
+}
