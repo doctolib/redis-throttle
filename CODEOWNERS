@@ -1,5 +1,4 @@
 * @doctolib/ratp
 
 # Needed for renovate automatic merge mechanism
-.github/workflows @doctolib/deployment @doctolib/ratp
 Gemfile.lock @doctolib/deployment @doctolib/ratp
