@@ -1,4 +1,4 @@
-* @doctolib/ratp
+* @doctolib/ntc
 
 # Needed for renovate automatic merge mechanism
-Gemfile.lock @doctolib/deployment @doctolib/ratp
+Gemfile.lock @doctolib/deployment @doctolib/ntc
