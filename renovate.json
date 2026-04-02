@@ -2,7 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>doctolib/renovate-config",
-    "local>doctolib/renovate-config:schedule-doctolib-weekly-on-sunday"
+    "local>doctolib/renovate-config//presets/schedule-doctolib-weekly-on-sunday.json5"
   ],
   "automerge": true,
   "enabledManagers": [
