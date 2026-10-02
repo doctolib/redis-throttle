@@ -89,13 +89,10 @@ This library aims to support and is tested against:
 
 * https://www.ruby-lang.org[Ruby]
 ** MRI 3.0.x
-** MRI 3.1.x
-** MRI 3.2.x
+** MRI 4.0.x (the version in `.ruby-version`)
 * https://redis.io[Redis Server]
-** 6.0.x
-** 6.2.x
-** 7.0.x
 ** 7.2.x
+** 8.0.x
 * https://github.com/redis/redis-rb[redis-rb]
 ** 4.1.x
 ** 4.2.x
@@ -106,12 +103,19 @@ This library aims to support and is tested against:
 ** 4.7.x
 ** 4.8.x
 ** 5.0.x
+** 5.4.x
 * https://github.com/resque/redis-namespace[redis-namespace]
 ** 1.10.x
+** 1.11.x
 * https://github.com/redis-rb/redis-client[redis-client]
 ** 0.12.x
 ** 0.13.x
 ** 0.14.x
+** 0.30.x
+
+The Ruby version in `.ruby-version` must match the one used by the Doctolib
+monolith. Renovate proposes bumps; whoever bumps Ruby in the monolith must bump
+it here too.
 
 If something doesn't work on one of these versions, it's a bug.
 

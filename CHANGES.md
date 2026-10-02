@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added Redis 7.2 to the list of actively supported engine versions
+- Added GitHub Actions CI (RuboCop and RSpec), tested against the Ruby version
+  in `.ruby-version` (kept in line with the monolith) and Ruby 3.0
+- Added redis-rb 5.4, redis-namespace 1.11 and redis-client 0.30 to the test
+  matrix
 
 ### Removed
 
