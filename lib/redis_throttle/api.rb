@@ -33,7 +33,7 @@ class RedisThrottle
     # @param strategies [Enumerable<Concurrency, RateLimit>]
     # @param token [String]
     # @return [Boolean]
-    def acquire(strategies:, token:)
+    def acquire(strategies:, token:) # rubocop:disable Naming/PredicateMethod
       execute(:ACQUIRE, to_params(strategies.sort_by(&:itself)) << :TOKEN << token << :TS << Time.now.to_i).zero?
     end
 
