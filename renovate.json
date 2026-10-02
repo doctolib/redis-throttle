@@ -6,7 +6,9 @@
   ],
   "automerge": true,
   "enabledManagers": [
-    "bundler"
+    "bundler",
+    "github-actions",
+    "ruby-version"
   ],
   "lockFileMaintenance": {
     "enabled": false
