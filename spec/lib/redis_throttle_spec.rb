@@ -17,42 +17,6 @@ RSpec.describe RedisThrottle do
     it { is_expected.to eq(described_class.new.rate_limit(:example, limit: 1, period: 60)) }
   end
 
-  describe ".info", :frozen_time do
-    before do
-      throttle =
-        described_class
-          .concurrency(:abc, limit: 3, ttl: 60)
-          .rate_limit(:xyz, limit: 3, period: 60)
-
-      3.times do
-        Timecop.travel(10)
-        throttle.acquire(REDIS)
-      end
-    end
-
-    it "returns usage info for all strategies in use" do
-      expect(described_class.info(REDIS)).to eq({
-        described_class::Concurrency.new(:abc, limit: 3, ttl: 60)  => 3,
-        described_class::RateLimit.new(:xyz, limit: 3, period: 60) => 3
-      })
-    end
-
-    it "supports filtering" do
-      expect(described_class.info(REDIS, match: "a*")).to eq({
-        described_class::Concurrency.new(:abc, limit: 3, ttl: 60) => 3
-      })
-    end
-
-    it "returns actual values" do
-      Timecop.travel(60)
-
-      expect(described_class.info(REDIS)).to eq({
-        described_class::Concurrency.new(:abc, limit: 3, ttl: 60)  => 1,
-        described_class::RateLimit.new(:xyz, limit: 3, period: 60) => 1
-      })
-    end
-  end
-
   describe "#dup" do
     it "copies strategies" do
       original_strategies = throttle.instance_variable_get(:@strategies)
@@ -364,32 +328,29 @@ RSpec.describe RedisThrottle do
     end
   end
 
-  describe "#info" do
-    let(:throttle)    { concurrency + rate_limit }
-    let(:concurrency) { described_class.concurrency(:abc, limit: 3, ttl: 60) }
-    let(:rate_limit)  { described_class.rate_limit(:xyz, limit: 3, period: 60) }
+  describe "dynamic concurrency limits" do
+    it "is shared for different limit but same ttl" do
+      concurrency = RedisThrottle.concurrency(:abc, limit: 1, ttl: 60)
+      dynamic_concurrency = RedisThrottle.concurrency(:abc, limit: 2, ttl: 60)
 
-    it "returns usage info for all strategies of the throttle" do
       concurrency.acquire(REDIS)
+      expect(concurrency.acquire(REDIS)).to be_falsey
 
-      expect(throttle.info(REDIS)).to eq({
-        described_class::Concurrency.new(:abc, limit: 3, ttl: 60)  => 1,
-        described_class::RateLimit.new(:xyz, limit: 3, period: 60) => 0
-      })
+      dynamic_concurrency.acquire(REDIS)
+      expect(dynamic_concurrency.acquire(REDIS)).to be_falsey
+      expect(concurrency.acquire(REDIS)).to be_falsey
     end
 
-    it "returns actual values", :frozen_time do
-      3.times do
-        Timecop.travel(10)
-        throttle.acquire(REDIS)
-      end
+    it "is not shared when ttl differs" do
+      concurrency = RedisThrottle.concurrency(:abc, limit: 1, ttl: 60)
+      dynamic_concurrency = RedisThrottle.concurrency(:abc, limit: 1, ttl: 70)
 
-      Timecop.travel(60)
+      concurrency.acquire(REDIS)
+      expect(concurrency.acquire(REDIS)).to be_falsey
 
-      expect(throttle.info(REDIS)).to eq({
-        described_class::Concurrency.new(:abc, limit: 3, ttl: 60)  => 1,
-        described_class::RateLimit.new(:xyz, limit: 3, period: 60) => 1
-      })
+      dynamic_concurrency.acquire(REDIS)
+      expect(dynamic_concurrency.acquire(REDIS)).to be_falsey
+      expect(concurrency.acquire(REDIS)).to be_falsey
     end
   end
 end
