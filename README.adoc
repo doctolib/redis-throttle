@@ -113,9 +113,8 @@ This library aims to support and is tested against:
 ** 0.14.x
 ** 0.30.x
 
-The Ruby version in `.ruby-version` must match the one used by the Doctolib
-monolith. Renovate proposes bumps; whoever bumps Ruby in the monolith must bump
-it here too.
+The Ruby version in `.ruby-version` is the primary tested version. Renovate
+proposes bumps.
 
 If something doesn't work on one of these versions, it's a bug.
 

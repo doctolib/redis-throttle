@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # ".ruby-version" is the monolith's Ruby version, "3.0" the gemspec floor.
+        # ".ruby-version" is the primary Ruby version, "3.0" the gemspec floor.
         ruby: [".ruby-version", "3.0"]
         redis: ["7.2", "8.0"]
     services:
