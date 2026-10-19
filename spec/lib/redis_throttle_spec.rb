@@ -330,8 +330,8 @@ RSpec.describe RedisThrottle do
 
   describe "dynamic concurrency limits" do
     it "is shared for different limit but same ttl" do
-      concurrency = RedisThrottle.concurrency(:abc, limit: 1, ttl: 60)
-      dynamic_concurrency = RedisThrottle.concurrency(:abc, limit: 2, ttl: 60)
+      concurrency = described_class.concurrency(:abc, limit: 1, ttl: 60)
+      dynamic_concurrency = described_class.concurrency(:abc, limit: 2, ttl: 60)
 
       concurrency.acquire(REDIS)
       expect(concurrency.acquire(REDIS)).to be_falsey
@@ -342,8 +342,8 @@ RSpec.describe RedisThrottle do
     end
 
     it "is not shared when ttl differs" do
-      concurrency = RedisThrottle.concurrency(:abc, limit: 1, ttl: 60)
-      dynamic_concurrency = RedisThrottle.concurrency(:abc, limit: 1, ttl: 70)
+      concurrency = described_class.concurrency(:abc, limit: 1, ttl: 60)
+      dynamic_concurrency = described_class.concurrency(:abc, limit: 1, ttl: 70)
 
       concurrency.acquire(REDIS)
       expect(concurrency.acquire(REDIS)).to be_falsey
