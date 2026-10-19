@@ -1,6 +1,7 @@
 /.bundle
 /tmp
 /Gemfile.lock
+/vendor
 
 # Built gems
 /pkg
